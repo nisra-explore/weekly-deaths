@@ -7,8 +7,6 @@
 outputs/
 _site/
 _site/*
-docs/
-docs/*
 code/demo/demo_outputs/
 code/dashboard/*.html
 code/dashboard/quick-read_files/
