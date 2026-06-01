@@ -1,0 +1,84 @@
+---
+title: About
+---
+
+```{r setup, warning = FALSE}
+library(here)
+
+source(here("dashboard_data_prep.R"))
+```
+
+This page provides background information about the weekly death registrations dashboard.
+
+The dashboard gives a weekly analysis of deaths registered in Northern Ireland.  
+
+## Background information
+
+Registration based data presented in this spreadsheet are provisional.
+
+This dashboard is refreshed weekly, at 9:30am each Friday when new data is released.
+
+The dashboard was last updated on **`{r} format(Sys.Date(), "%d %B %Y")`.**
+
+Information on the quality of deaths data is available from the Background Quality Report and the Quality Assurance of Administrative Data (QAAD) document for deaths at the links below:
+
+* [BQR Deaths](https://www.nisra.gov.uk/publications/northern-ireland-deaths-background-quality-report)
+* [QAAD Deaths](https://www.nisra.gov.uk/publications/quality-assurance-administrative-data-qaad-deaths-data-northern-ireland)
+
+## Data source(s)
+
+The data for the dashboard is sourced and can be downloaded from the [NISRA Data Portal](https://data.nisra.gov.uk/). ** NEED TO UPDATE LINK WHEN LIVE ON DP **
+
+The [tables giving a weekly analysis of deaths registered in Northern Ireland](https://www.nisra.gov.uk/statistics/death-statistics/weekly-death-registrations-northern-ireland) can also be found published on the NISRA website.
+
+## Things you need to know
+
+Deaths occurring in Northern Ireland are registered on the NI General Register Office's Registration System (NIROS). Daily extracts of registration records from NIROS are processed by the NISRA Vital Statistics Unit.
+
+Cause of death coding to the ICD-10 classification is carried out by ONS on NISRA’s behalf. This means that our quarterly statistics are the first output to report deaths according to underlying cause.  These statistics are currently available up to Quarter 4 2025.
+
+Due to user demand, NISRA will continue to publish a weekly, provisional estimate of Covid-19 related deaths in Northern Ireland, but will not include any other breakdowns. Further information on deaths caused by Covid-19 will be available in the [Registrar General Quarterly Tables](https://www.nisra.gov.uk/statistics/births-deaths-and-marriages/registrar-general-quarterly-tables).
+
+### Weekly deaths - ending `r pub_date_words_dmy`
+
+To meet user needs, NISRA publish timely but provisional counts of death registrations in Northern Ireland in our Weekly Deaths provisional dataset. To allow time for registration and processing, these figures are published 7 days after the week ends.
+
+### Provisional data and revisions
+
+These provisional tables are updated and published on a weekly basis to meet immediate user need and interest. More detailed data, including cause of death, are available in the Registrar General Quarterly tables, which includes data that has gone through more rigurous validations, but are still provisional. Following the release of quarterly tables the weekly totals are revised to reflect these further validations so there may be some minimal change. Data are finalised through the publication of the Annual Report of the Registrar General, after which final weekly death registrations for that year will be added to the historical weekly deaths data file available at https://www.nisra.gov.uk/publications/historical-weekly-deaths-data. Final data may differ from provisional data for a number of reasons. Final data has undergone an extensive set of quality assurance checks to ensure that all registration information is as correct and complete as possible. Final data also reflect cases where deaths have been re-registered at a later date in the same year by the informant or next of kin in order to change some detail within the registration, for example name spelling or date of birth. Until data for the calendar year have been finalised we will take the most recent registration as the more accurate. As data are based on registration date, it means that the week or even month to which re-registered cases relate to can change. This only happens in a very small number of cases (less than 0.1% of cases over the year) each year so while it does not change the overall number of deaths registered in a year, the individual weekly or even monthly totals and breakdowns by various characteristics may change by a small amount.
+
+Weekly deaths data last revised to reflect latest quarterly validations: **03.04.2026**
+
+Weekly expected deaths data last revised to reflect latest population estimates/projections: **03.10.2025**
+
+### Data over public holidays
+
+The number of deaths registered can be impacted by General Registration Office closures around statutory holidays. Care should therefore be taken in interpreting weekly data for the week of, and potentially the week after, any public or bank holiday, especially if making comparisons with other weeks or years. For reference, such holidays in 2026 are listed in the table below. Please note, this list is not exhaustive as GRO office closures may also include additional days around statutory holidays, and opening hours/days can vary across Council areas. Upcoming holidays are also listed on Gov.uk - [Northern Ireland Public Holidays](https://www.gov.uk/bank-holidays#northern-ireland).
+
+### This is an Accredited Official Statistics publication
+
+Accredited official statistics are called National Statistics in the [Statistics and Registration Service Act 2007](https://osr.statisticsauthority.gov.uk/accredited-official-statistics/).
+
+Accredited Official Statistics are produced to high professional standards set out in the Code of Practice for Official Statistics. They are produced free from any political interference.
+
+These accredited official statistics were independently reviewed by the Office for Statistics Regulation in April 2012. A **new Accredited Official Statistics badge has been produced** in line with the change from National Statistics to Accredited Official Statistics. While the badge has changed, the meaning behind it has remained the same.
+
+They comply with the standards of trustworthiness, quality and value in the Code of Practice for Statistics and should be labelled ‘accredited official statistics'.
+
+Our statistical practice is regulated by the Office for Statistics Regulation (OSR). OSR sets the standards of trustworthiness, quality and value in the Code of Practice for Statistics that all producers of official statistics should adhere to.
+
+View the full assessement of [Demography and Vital Events Statistics for Northern Ireland](https://uksa.statisticsauthority.gov.uk/publication/statistics-on-demography-and-vital-events-in-northern-ireland-letter-of-confirmation-as-national-statistics/).
+
+You are welcome to contact us directly with any comments about how we meet these standards by emailing demography@nisra.gov.uk.
+Alternatively, you can contact OSR by emailing [regulation@statistics.gov.uk](mailto:regulation@statistics.gov.uk) or via the [OSR website](https://osr.statisticsauthority.gov.uk/).
+
+The new method for estimating expected deaths and therefore excess deaths are **Official Statistics in Development**.
+
+Estimates produced by the new excess deaths methodology will be regularly reviewed, with further refinements to the approach being undertaken if necessary. As such, estimates of excess deaths produced by the new methodology will be labelled as Official Statistics in Development while further review, testing and development work is undertaken. Further information on Official Statistics in Development is available at: [OSR - Official Statistics in Development](https://osr.statisticsauthority.gov.uk/policies/official-statistics-policies/official-statistics-in-development)
+
+## Accessibility statement
+
+For further information on how accessible NISRA’s data visualisation websites are and what is being done to improve accessibility, please follow the link to the [NISRA Accessibility Statement](https://datavis.nisra.gov.uk/dissemination/accessibility-statement-visualisations.html).
+
+## Contact information
+

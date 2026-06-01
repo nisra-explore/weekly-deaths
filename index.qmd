@@ -1,0 +1,1313 @@
+---
+title: Weekly Deaths in Northern Ireland
+---
+
+```{r setup, warning = FALSE}
+library(here)
+library(dplyr)
+library(plotly)
+library(leaflet)
+library(sf)
+library(ggplot2)
+library(RColorBrewer)
+library(stringr)
+library(ggrepel)
+library(base64enc)
+library(lubridate)
+
+source(here("dashboard_data_prep.R"))
+```
+<div class="page-date-heading">
+  Week ending Friday, `r pub_date_words_dmy`
+  
+  <div class="publication-actions">
+  <button class="publication-action-button" type="button" onclick="window.location.href='about.html'">
+    About
+  </button>
+
+  <button class="publication-action-button" type="button" onclick="sharePage()">
+    Share
+  </button>
+
+  <button class="publication-action-button" type="button" onclick="window.location.href='weekly-deaths.pdf'">
+    Download
+  </button>
+</div>
+</div>
+  
+<details open class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Provisional number of weekly deaths
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-6}
+::: {.card-padding .d-flex .h-100}
+::: {.card .w-100}
+
+::: {.card-header}
+::: {style="text-align: left;"}
+##### Deaths Registered
+:::
+:::
+
+::: {.card-body .text-center}
+
+<div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
+`r reg_wdths`
+</div>
+
+<div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
+`r abs(reg_wdths_diff)` `r reg_wdths_arrow` deaths than previous week
+</div>
+
+<div class="fs-6 text-muted" style="text-align:left;">
+Previous week: `r reg_wdths_prev`
+</div>
+
+:::
+:::
+:::
+:::
+
+::: {.g-col-12 .g-col-md-6}
+::: {.card-padding .d-flex .h-100}
+::: {.card .w-100}
+
+::: {.card-header}
+::: {style="text-align: left;"}
+##### Comparison with expected deaths
+:::
+:::
+
+::: {.card-body .text-center}
+
+<div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
+`r abs(diff_wdths)`
+</div>
+
+<div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
+`r diff_arrow` compared with expected weekly deaths
+</div>
+
+<div class="fs-6 text-muted" style="text-align:left;">
+Expected deaths: `r expect_wdths`
+</div>
+
+:::
+:::
+:::
+:::
+
+:::
+
+
+</div>
+</details>
+
+<details open class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Provisional number of weekly registered deaths and expected weekly deaths for the past 52 weeks
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+<div class="rotate-screen">
+  <p>Please rotate your screen for optimal experience</p>
+</div>
+
+```{r fig_overall_expected_repeat, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing registered deaths by week  alongside a line for expected deaths. Registered deaths fluctuate over time and generally track close to expected deaths, with some variation above and below the expected values."}
+df_observe_excess <- df_observe_excess %>%
+  dplyr::mutate(
+    week_date = as.Date(week_date)
+  ) %>%
+  dplyr::arrange(week_date) %>%
+  dplyr::filter(
+    week_date >= max(week_date, na.rm = TRUE) - lubridate::weeks(52)
+  ) %>%
+  dplyr::mutate(
+    week_num = dplyr::row_number(),
+    bar_left = week_num - 0.50,
+    bar_right = week_num + 0.40,
+    month = lubridate::floor_date(week_date, "month"),
+    year = lubridate::year(week_date),
+    month_label = format(week_date, "%b")
+  )
+
+month_ticks <- df_observe_excess %>%
+  dplyr::group_by(month) %>%
+  dplyr::slice(1) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(
+    year_marker = year != dplyr::lag(year, default = dplyr::first(year) - 1),
+    x_tick_label = dplyr::if_else(
+      year_marker,
+      paste0(month_label, "<br>", year),
+      month_label
+    )
+  )
+
+df_expected_outline <- df_observe_excess %>%
+  dplyr::select(week_label, week_date, EXPDTHS, bar_left, bar_right) %>%
+  tidyr::pivot_longer(
+    cols = c(bar_left, bar_right),
+    names_to = "edge",
+    values_to = "x_outline"
+  ) %>%
+  dplyr::arrange(x_outline)
+
+plot_ly() %>%
+  add_bars(
+    data = df_observe_excess,
+    x = ~week_num,
+    y = ~DTHSREGPROV,
+    name = "Registered Deaths",
+    marker = list(color = nisra_blue),
+    hovertext = ~week_date,
+    hovertemplate = paste(
+      "<b>%{customdata}</b><br>",
+      "Date: %{hovertext}<br>",
+      "Registered Deaths: %{y}<extra></extra>"
+    ),
+    customdata = ~week_label
+  ) %>%
+  add_lines(
+    data = df_expected_outline,
+    x = ~x_outline,
+    y = ~EXPDTHS,
+    name = "Expected Deaths",
+    line = list(color = nisra_navy, width = 3, shape = "hv"),
+    hovertext = ~week_date,
+    hovertemplate = paste(
+      "<b>%{customdata}</b><br>",
+      "Date: %{hovertext}<br>",
+      "Expected Deaths: %{y}<extra></extra>"
+    ),
+    customdata = ~week_label
+  ) %>%
+  layout(
+    margin = list(t = 70),
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    xaxis = list(
+      title = "Month",
+      tickmode = "array",
+      tickvals = month_ticks$week_num,
+      ticktext = month_ticks$x_tick_label
+    ),
+    yaxis = list(
+      title = "",
+      rangemode = "tozero",
+      ticks = "outside",
+      ticklen = 8,
+      tickcolor = '#FFFFFF',
+      automargin = TRUE
+    ),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      xanchor = "center",
+      y = -0.25
+    ),
+    bargap = 0.05,
+    annotations = list(
+      list(
+        text = "Number of Registered Deaths",
+        x = -0.06,
+        y = 1.05,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "bottom",
+        font = list(size = 14)
+      )
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+```
+
+```{r download_reg_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_observe_excess,
+  title = "RegisteredExpected",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+</div>
+</details>
+
+<details open class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Number of Flu and / or Pneumonia and Covid-19 related weekly deaths registered
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-6}
+::: {.card-padding .d-flex .h-100}
+::: {.card .w-100}
+
+::: {.card-header}
+::: {style="text-align: left;"}
+##### Flu and / or Pneumonia related deaths registered
+:::
+:::
+
+::: {.card-body .text-center}
+
+<div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
+`r flu_wdths`
+</div>
+
+<div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
+`r abs(flu_wdths_diff)` `r flu_wdths_arrow` `r flu_wdths_single_plural` than previous week
+</div>
+
+<div class="fs-6 text-muted" style="text-align:left;">
+Previous week: `r flu_wdths_prev`
+</div>
+
+:::
+:::
+:::
+:::
+
+::: {.g-col-12 .g-col-md-6}
+::: {.card-padding .d-flex .h-100}
+::: {.card .w-100}
+
+::: {.card-header}
+::: {style="text-align: left;"}
+##### Covid-19 related deaths registered
+:::
+:::
+
+::: {.card-body .text-center}
+
+<div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
+`r covid_wdths`
+</div>
+
+<div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
+`r abs(covid_wdths_diff)` `r covid_wdths_arrow` `r covid_wdths_single_plural` than previous week
+</div>
+
+<div class="fs-6 text-muted" style="text-align:left;">
+Previous week: `r covid_wdths_prev`
+</div>
+
+:::
+:::
+:::
+:::
+
+:::
+
+
+
+</div>
+</details>
+
+<details closed class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Sex breakdown of number of weekly deaths registered
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-6}
+::: {.card-padding .d-flex .h-100}
+::: {.card .w-100}
+
+::: {.card-header}
+::: {style="text-align: left;"}
+##### Number of female weekly deaths registered
+:::
+:::
+
+::: {.card-body .text-center}
+
+<div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
+`r female_wdths`
+</div>
+
+<div class="fs-6 text-muted" style="text-align:left;">
+YTD total female deaths: `r female_ytd_wdths`
+</div>
+
+:::
+:::
+:::
+:::
+
+::: {.g-col-12 .g-col-md-6}
+::: {.card-padding .d-flex .h-100}
+::: {.card .w-100}
+
+::: {.card-header}
+::: {style="text-align: left;"}
+##### Number of male weekly deaths registered
+:::
+:::
+
+::: {.card-body .text-center}
+
+<div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
+`r male_wdths`
+</div>
+
+<div class="fs-6 text-muted" style="text-align:left;">
+YTD total male deaths: `r male_ytd_wdths`
+</div>
+
+:::
+:::
+:::
+:::
+
+:::
+
+::: {#age-tabs .panel-tabset}
+
+##### Weekly
+
+```{r sex_breakdown_pie_chart, echo = FALSE, fig.alt="A pie chart showing the proportion of male and female weekly deaths. The whole figures are reported above this pie chart."}
+plot_ly(
+  data = sex_pie_chart_wdths,
+  labels = ~sex,
+  values = ~value,
+  type = "pie",
+  textinfo = "label+percent",
+  textfont = list(color = '#FFFFFF', size = 16),
+  hoverinfo = "label+value+percent",
+    marker = list(
+    colors = c("Female" = nisra_blue, "Male" = nisra_navy)
+  )
+) %>%
+  layout(
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    title = "Proportion of female and male weekly deaths",
+    showlegend = TRUE,
+    legend = list(
+      font = list(size = 18),   # Increase legend text size
+      itemsizing = 'constant'   # Keep marker size constant in legend
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+```
+
+```{r download_wwekly_sex_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = sex_pie_chart_wdths,
+  title = "FemaleMaleWeekly",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+##### YTD
+
+```{r ytd_sex_breakdown_pie_chart, echo = FALSE, fig.alt="A pie chart showing the proportion of male and female weekly deaths. The whole figures are reported above this pie chart."}
+plot_ly(
+  data = ytd_sex_pie_chart_wdths,
+  labels = ~sex,
+  values = ~value,
+  type = "pie",
+  textinfo = "label+percent",
+  textfont = list(color = '#FFFFFF', size = 16),
+  hoverinfo = "label+value+percent",
+    marker = list(
+    colors = c("Female" = nisra_blue, "Male" = nisra_navy)
+  )
+) %>%
+  layout(
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    title = "Proportion of female and male weekly deaths",
+    showlegend = TRUE,
+    legend = list(
+      font = list(size = 18),   # Increase legend text size
+      itemsizing = 'constant'   # Keep marker size constant in legend
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+```
+
+```{r download_ytd_sex_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = ytd_sex_pie_chart_wdths,
+  title = "FemaleMaleYTD",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+::: 
+
+
+
+</div>
+</details>
+
+<details closed class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Age breakdown of number of weekly deaths registered
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+::: {.card-padding}
+::: {.card}
+
+<div class="rotate-screen">
+  <p>Please rotate your screen for optimal experience</p>
+</div>
+
+::: {.card-body}
+
+::: {#age-tabs .panel-tabset}
+
+##### Weekly
+```{r fig_age, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
+# max x-axis range
+max_x <- max(df_death_age$`Weekly Total`, na.rm = TRUE)
+
+plot_ly(
+  df_death_age,
+  y = ~`Age band`,
+  x = ~`Weekly Total`,
+  type = "bar",
+  orientation = "h",
+  marker = list(
+    color = nisra_blue,
+    line = list(color = nisra_blue, width = 1)
+  ),
+  hoverinfo = "text",
+  hovertemplate = "%{y}: %{x}<extra></extra>"
+) %>%
+  layout(
+    margin = list(t = 70),  # gives space above plot for y-axis title
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    xaxis = list(
+      title = "Number of Deaths",
+      range = c(0, max_x),
+      autorange = FALSE,
+      tick0 = 0,
+      dtick = 10,
+      showline = TRUE,
+      zerolinecolor = "#666666"
+    ),
+    yaxis = list(
+      autorange = "reversed",
+      title = "",
+      ticks = "outside",
+      ticklen = 8,
+      tickcolor = '#FFFFFF',
+      automargin = TRUE
+    ),
+    annotations = list(         # plot title above y-axis title
+      list(
+        text = "Age",
+        x = -0.06,
+        y = 1.05,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "bottom",
+        font = list(size = 14)
+      )
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+
+```
+
+```{r download_age_weekly_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_death_age,
+  title = "AgeWeekly",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+##### YTD
+```{r fig_age_ytd, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
+# max x-axis range
+max_x <- max(df_age_ytd$`total_value`, na.rm = TRUE)
+
+plot_ly(
+  df_age_ytd,
+  y = ~`Age band`,
+  x = ~`total_value`,
+  type = "bar",
+  orientation = "h",
+  marker = list(
+    color = nisra_blue,
+    line = list(color = nisra_blue, width = 1)
+  ),
+  hoverinfo = "text",
+  hovertemplate = "%{y}: %{x}<extra></extra>"
+) %>%
+  layout(
+    margin = list(t = 70),  # gives space above plot for y-axis title
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    xaxis = list(
+      title = "Number of Deaths",
+      range = c(0, max_x),
+      autorange = FALSE,
+      tick0 = 0,
+      ntick = 10,
+      showline = TRUE,
+      zerolinecolor = "#666666"
+    ),
+    yaxis = list(
+      autorange = "reversed",
+      title = "",
+      ticks = "outside",
+      ticklen = 8,
+      tickcolor = '#FFFFFF',
+      automargin = TRUE
+    ),
+    annotations = list(         # plot title above y-axis title
+      list(
+        text = "Age",
+        x = -0.06,
+        y = 1.05,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "bottom",
+        font = list(size = 14)
+      )
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+
+```
+
+```{r download_age_ytd_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_age_ytd,
+  title = "AgeYTD",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+:::
+
+:::
+:::
+
+
+
+</div>
+</details>
+
+<details closed class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Local government district (LGD) breakdown of number of weekly deaths registered
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+
+<div class="card-body">
+
+::: {.card-padding}
+::: {.card}
+
+<div class="rotate-screen">
+  <p>Please rotate your screen for optimal experience</p>
+</div>
+
+::: {.card-body}
+
+::: {.map-bg}
+
+::: {#lgd-tabs .panel-tabset}
+
+##### Weekly
+
+```{r lgd deaths registered map, fig.alt="Map showing the number of deaths across Local Government Districts. Death counts vary by area, with some districts,like Belfast, showing higher numbers than others."}
+#| out-width: 100%
+#| fig-format: svg
+#| fig-height: 4
+#| dev.args: !expr list(bg = "#fff")
+
+# Define color palette for ranking categories (dark to light)
+category_colors <- c(
+  "Highest Number of Deaths" = "#00205b",
+  "2nd - 3rd Highest" = "#084594",
+  "4th - 5th Highest" = "#2171b5",
+  "6th - 7th Highest" = "#6baed6",
+  "8th - 9th Highest" = "#bdd7e7",
+  "10th - 11th Highest" = "#eff3ff"
+)
+
+# Plot with ranking-based legend
+ggplot() +
+  geom_sf(data = df_map, aes(fill = deaths_category), color = "grey40", size = 0.2) +
+  scale_fill_manual(
+    values = category_colors,
+    labels = c(
+      "Highest Number of Deaths" = "Highest",
+      "2nd - 3rd Highest" = "",
+      "4th - 5th Highest" = "",
+      "6th - 7th Highest" = "",
+      "8th - 9th Highest" = "",
+      "10th - 11th Highest" = "Lowest"
+    ),
+    name = "",
+    na.value = "grey90",
+    guide = guide_legend(
+      title.position = "top",
+      title.hjust = 0.5,
+      keyheight = 0.6,
+      keywidth = 0.5
+    )
+  ) +
+  geom_shadowtext(
+    data = noncrowded_df %>% 
+      filter(deaths_category %in% c("Highest", "2nd - 3rd Highest", "4th - 5th Highest")),
+    aes(x = lng, y = lat, label = label_text),
+    size = 2.5,
+    fontface = "bold",
+    show.legend = FALSE,
+    lineheight = 0.8,
+    color = "white",
+    bg.color = "black"
+  ) +
+  geom_text(
+    data = noncrowded_df %>% 
+      filter(!deaths_category %in% c("Highest", "2nd - 3rd Highest", "4th - 5th Highest")),
+    aes(x = lng, y = lat, label = label_text),
+    size = 2.5,
+    fontface = "bold",
+    show.legend = FALSE,
+    lineheight = 0.8,
+    color = "black"
+  ) +
+  geom_point(
+    data = crowded_df,
+    aes(x = lng, y = lat),
+    color = "black",
+    size = 1.5
+  ) +
+  geom_text_repel(
+    data = crowded_df,
+    aes(x = lng, y = lat, label = label_text, color = label_colour),
+    nudge_x = crowded_df$nudge_x,
+    nudge_y = crowded_df$nudge_y,
+    segment.color = "black",
+    segment.size = 0.3,
+    min.segment.length = 0,
+    size = 2.5,
+    fontface = "bold",
+    direction = "both",
+    box.padding = 0.4,
+    max.overlaps = Inf,
+    show.legend = FALSE,
+    lineheight = 0.8
+  ) +
+  scale_color_identity() +
+  coord_sf(expand = FALSE) +
+  theme_void() +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    plot.margin = margin(t = 0, b = 0),
+    legend.position = c(1, 0.8),
+    legend.margin = margin(l = 5),
+    panel.background = element_rect(fill = "#fff", colour = NA),
+    plot.background = element_rect(fill = "#fff", colour = NA),
+  )
+```
+
+```{r download_lgd_weekly_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_map_weekly,
+  title = "LGDWeekly",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+##### YTD
+
+```{r lgd_deaths_ytd_registered_map, fig.alt="Map showing the number of deaths across Local Government Districts for the YTD. Death counts vary by area, with some districts,like Belfast, showing higher numbers than others."}
+#| out-width: 100%
+#| fig-format: svg
+#| fig-height: 4
+#| dev.args: !expr list(bg = "#fff")
+
+# Define color palette for ranking categories (dark to light)
+category_colors <- c(
+  "Highest Number of Deaths" = "#00205b",
+  "2nd - 3rd Highest" = "#084594",
+  "4th - 5th Highest" = "#2171b5",
+  "6th - 7th Highest" = "#6baed6",
+  "8th - 9th Highest" = "#bdd7e7",
+  "10th - 11th Highest" = "#eff3ff"
+)
+
+# Plot with ranking-based legend
+ggplot() +
+  geom_sf(data = df_ytd_map, aes(fill = deaths_category), color = "grey40", size = 0.2) +
+  scale_fill_manual(
+    values = category_colors,
+    labels = c(
+      "Highest Number of Deaths" = "Highest",
+      "2nd - 3rd Highest" = "",
+      "4th - 5th Highest" = "",
+      "6th - 7th Highest" = "",
+      "8th - 9th Highest" = "",
+      "10th - 11th Highest" = "Lowest"
+    ),
+    name = "",
+    na.value = "grey90",
+    guide = guide_legend(
+      title.position = "top",
+      title.hjust = 0.5,
+      keyheight = 0.6,
+      keywidth = 0.5
+    )
+  ) +
+  geom_shadowtext(
+    data = noncrowded_ytd_df %>% 
+      filter(deaths_category %in% c("Highest", "2nd - 3rd Highest", "4th - 5th Highest")),
+    aes(x = lng, y = lat, label = label_text),
+    size = 2.5,
+    fontface = "bold",
+    show.legend = FALSE,
+    lineheight = 0.8,
+    color = "white",
+    bg.color = "black"
+  ) +
+  geom_text(
+    data = noncrowded_ytd_df %>% 
+      filter(!deaths_category %in% c("Highest", "2nd - 3rd Highest", "4th - 5th Highest")),
+    aes(x = lng, y = lat, label = label_text),
+    size = 2.5,
+    fontface = "bold",
+    show.legend = FALSE,
+    lineheight = 0.8,
+    color = "black"
+  ) +
+  geom_point(
+    data = crowded_ytd_df,
+    aes(x = lng, y = lat),
+    color = "black",
+    size = 1.5
+  ) +
+  geom_text_repel(
+    data = crowded_ytd_df,
+    aes(x = lng, y = lat, label = label_text, color = label_colour),
+    nudge_x = crowded_ytd_df$nudge_x,
+    nudge_y = crowded_ytd_df$nudge_y,
+    segment.color = "black",
+    segment.size = 0.3,
+    min.segment.length = 0,
+    size = 2.5,
+    fontface = "bold",
+    direction = "both",
+    box.padding = 0.4,
+    max.overlaps = Inf,
+    show.legend = FALSE,
+    lineheight = 0.8
+  ) +
+  scale_color_identity() +
+  coord_sf(expand = FALSE) +
+  theme_void() +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    plot.margin = margin(t = 0, b = 0),
+    legend.position = c(1, 0.8),
+    legend.margin = margin(l = 5),
+    panel.background = element_rect(fill = "#fff", colour = NA),
+    plot.background = element_rect(fill = "#fff", colour = NA),
+  )
+```
+
+```{r download_lgd_ytd_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_map_ytd,
+  title = "LGDYTD",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+:::
+
+:::
+:::
+
+:::
+:::
+
+
+
+</div>
+</details>
+
+<details closed class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Place of Death breakdown of number of weekly deaths registered
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body" markdown="1">
+
+<div class="rotate-screen">
+  <p>Please rotate your screen for optimal experience</p>
+</div>
+
+::: {#pod-tabs .panel-tabset}
+
+##### Weekly
+
+```{r fig_place, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by place of occurrence for the latest week. Most deaths occur in hospitals and at home, with fewer deaths in care or nursing homes, and the lowest numbers in hospice and other locations."}
+# max x-axis range
+max_x <- max(df_pod$`Number of Deaths`, na.rm = TRUE)
+
+# ensure order is descending
+cat_order <- df_pod$`Place of death`[
+  order(df_pod$`Number of Deaths`, decreasing = TRUE)
+]
+
+fig_place <- plot_ly(
+  df_pod,
+  y = ~`Place of death`,
+  x = ~`Number of Deaths`,
+  type = "bar",
+  orientation = "h",
+  marker = list(
+    color = nisra_blue,
+    line = list(color = nisra_blue, width = 1)
+  ),
+  hoverinfo = "text",
+  hovertemplate = "%{y}: %{x}<extra></extra>"
+) %>%
+  layout(
+    margin = list(t = 70),  # gives space above plot for y-axis title
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    xaxis = list(
+      title = "Number of Deaths",
+      range = c(0, max_x),
+      autorange = FALSE,
+      tick0 = 0,
+      dtick = 10,
+      showline = TRUE,
+      zerolinecolor = "#666666"
+    ),
+    yaxis = list(
+      title = "",
+      categoryorder = "array",
+      categoryarray = cat_order,
+      tickfont = list(size = 14),
+      ticks = "outside",
+      ticklen = 8,
+      tickcolor = '#FFFFFF',
+      automargin = TRUE
+    ),
+    annotations = list(         # plot title above y-axis title
+      list(
+        text = "Place of Death",
+        x = -0.06,
+        y = 1.05,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "bottom",
+        font = list(size = 14)
+      )
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+
+fig_place
+```
+
+```{r download_pod_weekly_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_pod,
+  title = "PlaceWeekly",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+##### YTD
+```{r fig_place_ytd, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by place of occurrence for the year to date. Most deaths occur in hospitals and at home, with fewer deaths in care or nursing homes, and the lowest numbers in hospice and other locations."}
+# max x-axis range
+max_x <- max(df_ytd_pod$total_value, na.rm = TRUE)
+
+# ensure order is descending
+cat_order <- df_ytd_pod$`Place of death`[
+  order(df_ytd_pod$total_value, decreasing = TRUE)
+]
+
+fig_place_ytd <- plot_ly(
+  df_ytd_pod,
+  y = ~`Place of death`,
+  x = ~`total_value`,
+  type = "bar",
+  orientation = "h",
+  marker = list(
+    color = nisra_blue,
+    line = list(color = nisra_blue, width = 1)
+  ),
+  hoverinfo = "text",
+  hovertemplate = "%{y}: %{x}<extra></extra>"
+) %>%
+  layout(
+    margin = list(t = 70),  # gives space above plot for y-axis title
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    xaxis = list(
+      title = "Number of Deaths",
+      range = c(0, max_x),
+      autorange = FALSE,
+      tick0 = 0,
+      dtick = 250,
+      showline = TRUE,
+      zerolinecolor = "#666666"
+    ),
+    yaxis = list(
+      title = "",
+      categoryorder = "array",
+      categoryarray = cat_order,
+      tickfont = list(size = 14),
+      ticks = "outside",
+      ticklen = 8,
+      tickcolor = '#FFFFFF',
+      automargin = TRUE
+    ),
+    annotations = list(         # plot title above y-axis title
+      list(
+        text = "Place of Death",
+        x = -0.06,
+        y = 1.05,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "bottom",
+        font = list(size = 14)
+      )
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+
+fig_place_ytd
+```
+
+```{r download_place_ytd_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_ytd_pod,
+  title = "PlaceYTD",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+
+:::
+
+
+
+</div>
+
+</details>
+
+<details closed class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Registered weekly deaths and death occurrences for the past 52 weeks
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+```{r fig_overall_observe, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="r chart of registered deaths by week with a line showing deaths that occurred in each week. The two series follow a similar pattern over time, with weekly values generally close but with some variation between registered and occurred deaths."}
+month_ticks <- df_reg_vs_occ %>%
+  dplyr::group_by(month) %>%
+  dplyr::slice(1) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(
+    year_marker = year != dplyr::lag(year, default = dplyr::first(year) - 1),
+    x_tick_label = dplyr::if_else(
+      year_marker,
+      paste0(month_label, "<br>", year),
+      month_label
+    )
+  )
+
+plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
+  add_lines(
+    y = ~`Registered Deaths`,
+    name = "Registered Deaths",
+    line = list(color = nisra_blue, width = 3),
+    hovertext = ~week_ending_date,
+    customdata = ~week_label_hover,
+    hovertemplate = paste(
+      "<b>Week %{customdata}</b><br>",
+      "Date: %{hovertext}<br>",
+      "Registered Deaths: %{y}<extra></extra>"
+    )
+  ) %>%
+  add_lines(
+    y = ~`Deaths Occurred`,
+    name = "Death occurrences",
+    line = list(color = nisra_navy, width = 3),
+    hovertext = ~week_ending_date,
+    customdata = ~week_label_hover,
+    hovertemplate = paste(
+      "<b>Week %{customdata}</b><br>",
+      "Date: %{hovertext}<br>",
+      "Death occurrences: %{y}<extra></extra>"
+    ) 
+  ) %>%
+  layout(
+    margin = list(t = 70, b = 90),
+    plot_bgcolor = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    xaxis = list(
+      title = "Month",
+      tickmode = "array",
+      tickvals = month_ticks$`Week Number`,
+      ticktext = month_ticks$x_tick_label,
+      tickangle = 0,
+      automargin = TRUE
+    ),
+    yaxis = list(
+      title = "",
+      rangemode = "tozero",
+      ticks = "outside",
+      ticklen = 8,
+      tickcolor = '#FFFFFF',
+      automargin = TRUE
+    ),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      xanchor = "center",
+      y = -0.25
+    ),
+    annotations = list(
+      list(
+        text = "Number of Deaths",
+        x = -0.06,
+        y = 1.05,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "bottom",
+        font = list(size = 14)
+      )
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+```
+
+```{r download_reg_vs_occ_deaths, echo = FALSE}
+# call make tables function to create chart download buttons
+f_make_tables(
+  data = df_reg_vs_occ,
+  title = "RegvsOcc",
+  data_style = ns_comma,
+  data_dir = here("outputs/figdata"),
+)
+```
+
+</div>
+</details>
+
+<details class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+Links to other publications on death registrations
+</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+- [Weekly death registrations in Northern Ireland](https://www.nisra.gov.uk/publications/weekly-death-registrations-northern-ireland-2026)
+
+- Statistics on deaths registered in Northern Ireland, including weekly death registrations and excess deaths. [Death Statistics](https://www.nisra.gov.uk/statistics/deaths/death-statistics)
+
+- Annual reports exploring specific causes of death, including alcohol, drug-related and suicide deaths in more detail. [Cause of Death statistics](https://www.nisra.gov.uk/statistics/births-deaths-and-marriages/cause-death)
+
+- [Deaths registered weekly in England and Wales](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales)
+
+- [Deaths registered weekly in Scotland](https://www.nrscotland.gov.uk/publications/deaths-registered-weekly-in-scotland/#)
+
+</div>
+</details>
+
+
+<details class="card accordion">
+
+<summary class="card-header accordion-header">
+<div class="accordion-title-row">
+<h4 class="accordion-title">
+FAQs</h4>
+
+<span class="accordion-symbol" aria-hidden="true"></span>
+</div>
+</summary>
+
+<div class="card-body">
+
+**1. What is the difference between registered, occurred and expected deaths?**  
+**Registered deaths** are counted based on the date the death is officially recorded with the General Register Office.  
+**Occurred deaths** (death occurrences) are based on the actual date the person died, regardless of when the death was registered.  
+**Expected deaths** are an estimate of how many deaths would normally occur, based on historical trends. These are used to compare with current figures.
+
+
+**2. Why might deaths appear in a different week than when they occurred?**  
+Deaths are shown based on the registration date, not the date of death.
+This means some deaths may appear in a later week than when they actually happened.
+Most deaths in Northern Ireland are registered within 5 days
+Delays can occur, especially around public holidays
+
+
+**3. Are weekly figures final?**  
+No — weekly figures are provisional.
+They may change as more data becomes available.
+Data are reviewed and updated quarterly as part of quality assurance
+
+
+**4. How are expected deaths calculated?**  
+Expected deaths are calculated using statistical methods based on historical data trends.
+More information on the current method of estimating expected deaths and calculating excess deaths is available in the ONS Methodology Paper at: [Estimating excess deaths in the UK, methodology changes - Office for National Statistics (ons.gov.uk)](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges)
+
+
+**5. What counts as a COVID‑19 or flu-related death?**  
+COVID‑19 deaths include any mention of coronavirus (confirmed or suspected) anywhere on the death certificate
+Flu or pneumonia deaths include any mention of these conditions on the death certificate
+
+
+**6. How are deaths assigned to areas (LGDs)?**  
+Deaths are assigned based on the person’s usual residence (which can include care homes).
+If the person did not usually live in Northern Ireland, the death is assigned to the place of death
+
+
+**7. What do the place of death categories mean?**  
+Care/Nursing homes: Only includes deaths that occurred in those settings
+Other: Includes deaths at non-usual residences or any other locations not listed
+
+</div>
+</details>
+
+<script>
+function sharePage() {
+  const shareData = {
+    title: document.title,
+    text: "Weekly Deaths Recorded in Northern Ireland",
+    url: window.location.href
+  };
+
+  if (navigator.share) {
+    navigator.share(shareData).catch(function(error) {
+      console.log("Sharing cancelled or failed:", error);
+    });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.href).then(function() {
+      alert("Page link copied to clipboard");
+    });
+  } else {
+    prompt("Copy this link:", window.location.href);
+  }
+}
+</script>

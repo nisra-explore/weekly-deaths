@@ -1,0 +1,34 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Rendered outputs
+outputs/
+_site/
+_site/*
+docs/
+docs/*
+code/demo/demo_outputs/
+code/dashboard/*.html
+code/dashboard/quick-read_files/
+
+# Quarto intermediate files
+.quarto/
+**/*.quarto_ipynb
+*_cache/
+*_freeze/
+
+# R Markdown / knitr intermediates
+*.utf8.md
+*.knit.md
+
+# Generated report formats
+*.pdf
+*.docx
+*.pptx
+
+# Keep source include HTML files tracked
+!_includes/
+!_includes/*.html
+/.quarto/
