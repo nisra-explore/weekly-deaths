@@ -18,6 +18,9 @@ jobs:
   render:
     runs-on: ubuntu-latest
 
+    env:
+      RENV_CONFIG_REPOS_OVERRIDE: https://cloud.r-project.org
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -33,41 +36,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
 
-      - name: Set up R package dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            any::markdown
-            any::broom
-            any::rmarkdown
-            any::yaml
-            any::dplyr
-            any::tidyr
-            any::stringr
-            any::forcats
-            any::xfun
-            any::htmltools
-            any::openxlsx
-            any::readxl
-            any::lubridate
-            any::plotly
-            any::here
-            any::kableExtra
-            any::scales
-            any::ggrepel
-            any::DT
-            any::AMR
-            any::ggpubr
-            any::sf
-            any::tmap
-            any::formattable
-            any::httpuv
-            any::janitor
-            any::odbc
-            any::DBI
-            any::foreign
-            any::fontawesome
-            any::ISOweek
+      - name: Install renv
+        run: Rscript -e 'install.packages("renv", repos = "https://cloud.r-project.org")'
+
+      - name: Restore R packages from renv.lock
+        run: Rscript -e 'renv::restore(prompt = FALSE)'
 
       - name: Render Quarto site
         run: quarto render
