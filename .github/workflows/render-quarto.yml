@@ -1,0 +1,84 @@
+name: Render and publish Quarto site
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * 5"
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+
+      - name: Set up R package dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::markdown
+            any::broom
+            any::rmarkdown
+            any::yaml
+            any::dplyr
+            any::tidyr
+            any::stringr
+            any::forcats
+            any::xfun
+            any::htmltools
+            any::openxlsx
+            any::readxl
+            any::lubridate
+            any::plotly
+            any::here
+            any::kableExtra
+            any::scales
+            any::ggrepel
+            any::DT
+            any::AMR
+            any::ggpubr
+            any::sf
+            any::tmap
+            any::formattable
+            any::httpuv
+            any::janitor
+            any::odbc
+            any::DBI
+            any::foreign
+            any::fontawesome
+            any::ISOweek
+
+      - name: Render Quarto site
+        run: quarto render
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
