@@ -9,11 +9,11 @@ source(paste0(here(), "/code/config.R"))
 cur_year <- lubridate::year(Sys.Date())
 
 api_urls <- list(
-  wdths     = "https://ppws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHS/CSV/1.0/en",
-  wdthssxag = "https://ppws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSSXAG/CSV/1.0/en",
-  wdthspod  = "https://ppws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSPOD/CSV/1.0/en",
-  wdthslgd  = "https://ppws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSLGD/CSV/1.0/en",
-  wdthsocc  = "https://ppws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSOCC/CSV/1.0/en"
+  wdths     = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHS/CSV/1.0/en",
+  wdthssxag = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSSXAG/CSV/1.0/en",
+  wdthspod  = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSPOD/CSV/1.0/en",
+  wdthslgd  = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSLGD/CSV/1.0/en",
+  wdthsocc  = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSOCC/CSV/1.0/en"
 )
 
 read_csv_api <- function(url) {
