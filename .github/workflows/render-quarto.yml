@@ -3,7 +3,7 @@ name: Render and publish Quarto site
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 8,9 * * 5"
+    - cron: "*/5 * * * *"
 
 permissions:
   contents: write
