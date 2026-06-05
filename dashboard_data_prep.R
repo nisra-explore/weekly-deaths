@@ -184,6 +184,13 @@ df_observe_excess <- df_observe_excess %>%
     bar_right = week_num + 0.40
   )
 
+df_observe_excess_dl <- df_observe_excess %>%
+  select('TLIST(W1)', week_date, DTHSREGPROV, EXPDTHS) %>%
+  rename(Week = 'TLIST(W1)',
+         'Week date' = week_date,
+         'Number of registered deaths' = DTHSREGPROV,
+         'Number of expected deaths' = EXPDTHS)
+
 ##### Sex breakdown #####
 
 # Extract latest week female and male deaths
@@ -266,6 +273,9 @@ df_death_age$`Weekly Total` <- as.numeric(df_death_age$`Weekly Total`)
 df_death_age <- df_death_age %>%
   mutate(`Age band` = str_remove(`Age band`, "^Age\\s+"))
 
+df_death_age_dl <- df_death_age %>%
+  rename('Number of deaths' = 'Weekly Total')
+
 # Calculate percentage of deaths in age 75+
 
 week_total = sum(df_death_age$`Weekly Total`)
@@ -289,6 +299,8 @@ df_age_ytd <- df_age_ytd [-c(7),]
 df_age_ytd <- df_age_ytd %>%
   mutate(`Age band` = str_remove(`Age band`, "^Age\\s+"))
 
+df_age_ytd_dl <- df_age_ytd %>%
+  rename('Number of deaths' = 'total_value')
 
 ##### LGD#####
 # Prepare weekly deaths by Local Government District (LGD)
@@ -480,6 +492,11 @@ df_map_weekly <- df_map_weekly[ , -c(5, 6, 8)]
 # Unlist to flat data frame
 df_map_weekly[] <- lapply(df_map_weekly, unlist)
 
+df_map_weekly_dl <- df_map_weekly %>%
+  select(LGDNAME, num_deaths) %>%
+  rename('Local government district (LGD)' = LGDNAME,
+         'Number of deaths' = num_deaths)
+
 # Prepare YTD map data for download
 df_map_ytd <- df_ytd_map
 
@@ -491,6 +508,11 @@ df_map_ytd <- df_map_ytd[ , -c(5, 6, 8)]
 
 # Unlist to flat data frame
 df_map_ytd[] <- lapply(df_map_ytd, unlist)
+
+df_map_ytd_dl <- df_map_ytd %>%
+  select(LGDNAME, num_deaths) %>%
+  rename('Local government district (LGD)' = LGDNAME,
+         'Number of deaths' = num_deaths)
 
 ##### Place of death #####
 # Prepare weekly place of death breakdown
@@ -522,6 +544,9 @@ df_ytd_pod <- df_ytd_pod %>%
 # Sort by highest deaths and remove all places row
 df_ytd_pod <- df_ytd_pod[order(-df_ytd_pod$`total_value`), ]
 df_ytd_pod <- df_ytd_pod[-c(1),]
+
+df_ytd_pod_dl <- df_ytd_pod %>%
+  rename('Number of deaths' = total_value)
 
 ##### Registered vs Occurred #####
 # Compare registered deaths with deaths that occurred in latest 52 weeks
@@ -573,3 +598,10 @@ df_reg_vs_occ <- df_number_registered %>%
     year,
     month_label
   )
+
+df_reg_vs_occ_dl <- df_reg_vs_occ %>%
+  select('TLIST(W1)', week_ending_date, 'Registered Deaths', 'Deaths Occurred') %>%
+  rename(Week = 'TLIST(W1)',
+         'Week date' = week_ending_date,
+         'Number of registered deaths' = 'Registered Deaths',
+         'Number of deaths occurred' = 'Deaths Occurred')

@@ -358,7 +358,7 @@ plot_ly() %>%
 ```{r download_reg_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
-  data = df_observe_excess,
+  data = df_observe_excess_dl,
   title = "RegisteredExpected",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
@@ -672,7 +672,7 @@ plot_ly(
 ```{r download_age_weekly_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
-  data = df_death_age,
+  data = df_death_age_dl,
   title = "AgeWeekly",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
@@ -746,7 +746,7 @@ plot_ly(
 ```{r download_age_ytd_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
-  data = df_age_ytd,
+  data = df_age_ytd_dl,
   title = "AgeYTD",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
@@ -900,7 +900,7 @@ ggplot() +
 ```{r download_lgd_weekly_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
-  data = df_map_weekly,
+  data = df_map_weekly_dl,
   title = "LGDWeekly",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
@@ -1010,7 +1010,7 @@ ggplot() +
 ```{r download_lgd_ytd_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
-  data = df_map_ytd,
+  data = df_map_ytd_dl,
   title = "LGDYTD",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
@@ -1216,7 +1216,7 @@ fig_place_ytd
 ```{r download_place_ytd_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
-  data = df_ytd_pod,
+  data = df_ytd_pod_dl,
   title = "PlaceYTD",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
