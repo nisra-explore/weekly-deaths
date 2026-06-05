@@ -21,8 +21,8 @@ f_make_tables <- function(data,
   # File name generated from sheet name
   
   csv_file <- sub(" ", "-", tolower(paste0(
-    "TL-demo-", sheet, "-",
-    pub_date_words_my, ".csv"
+    "weekly-deaths-", sheet, "-",
+    week_ending, ".csv"
   )))
   excel_file <- sub(".csv", ".xlsx", csv_file, fixed = TRUE)
   

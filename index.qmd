@@ -3,6 +3,9 @@ title: Weekly Deaths in Northern Ireland
 ---
 
 ```{r setup, warning = FALSE}
+# -------------------------
+# Load required packages
+# -------------------------
 library(here)
 library(dplyr)
 library(plotly)
@@ -17,21 +20,25 @@ library(lubridate)
 
 source(here("dashboard_data_prep.R"))
 ```
+
+
+<!-- --------------------------------------
+     PAGE HEADER: Publication date + actions
+     Displays the latest week ending date and navigation buttons
+--------------------------------------- -->
+
 <div class="page-date-heading">
-  Week ending Friday, `r pub_date_words_dmy`
+  <!-- Dynamic publication date pulled from R -->
+  Week ending Friday, `r week_ending`
   
   <div class="publication-actions">
-  <button class="publication-action-button" type="button" onclick="window.location.href='about.html'">
-    About
-  </button>
-
-  <button class="publication-action-button" type="button" onclick="sharePage()">
-    Share
-  </button>
-
-  <button class="publication-action-button" type="button" onclick="window.location.href='weekly-deaths.pdf'">
-    Download
-  </button>
+  
+  <!-- Button: Navigate to About / methodology page -->
+<div class="publication-actions">
+  <button class="publication-action-button" type="button" onclick="window.location.href='about.html'">About</button>
+  <button class="publication-action-button" type="button" onclick="sharePage()">Share</button>
+  <button class="publication-action-button" type="button" onclick="window.location.href='weekly-deaths.pdf'">Download</button>
+</div>
 </div>
 </div>
   
@@ -39,38 +46,58 @@ source(here("dashboard_data_prep.R"))
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
+
+
+<!-- Section title shown to users -->
 <h4 class="accordion-title">
-Provisional number of weekly deaths
+Provisional number of weekly deaths registered
 </h4>
 
+
+<!-- Accordion expand/collapse icon -->
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
 </summary>
 
 <div class="card-body">
 
+
+<!-- Grid layout for responsive cards -->
 ::: {.grid}
 
+
+<!-- --------------------------------------
+     CARD 1: Registered deaths
+--------------------------------------- -->
 ::: {.g-col-12 .g-col-md-6}
 ::: {.card-padding .d-flex .h-100}
 ::: {.card .w-100}
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
+
+
+<!-- Card title -->
 ##### Deaths Registered
 :::
 :::
 
 ::: {.card-body .text-center}
 
+
+<!-- Main metric: total deaths for latest week -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
 `r reg_wdths`
 </div>
 
+
+<!-- Weekly change compared with previous week -->
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
 `r abs(reg_wdths_diff)` `r reg_wdths_arrow` deaths than previous week
 </div>
 
+
+<!-- Reference value from previous week -->
 <div class="fs-6 text-muted" style="text-align:left;">
 Previous week: `r reg_wdths_prev`
 </div>
@@ -80,26 +107,39 @@ Previous week: `r reg_wdths_prev`
 :::
 :::
 
+
+<!-- --------------------------------------
+     CARD 2: Comparison with expected deaths
+--------------------------------------- -->
 ::: {.g-col-12 .g-col-md-6}
 ::: {.card-padding .d-flex .h-100}
 ::: {.card .w-100}
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
+
+
+<!-- Card title -->
 ##### Comparison with expected deaths
 :::
 :::
 
 ::: {.card-body .text-center}
 
+
+<!-- Absolute difference between registered and expected deaths -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
 `r abs(diff_wdths)`
 </div>
 
+
+<!-- Indicator showing whether deaths are above/below expected -->
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
 `r diff_arrow` compared with expected weekly deaths
 </div>
 
+
+<!-- Expected deaths benchmark -->
 <div class="fs-6 text-muted" style="text-align:left;">
 Expected deaths: `r expect_wdths`
 </div>
@@ -115,48 +155,88 @@ Expected deaths: `r expect_wdths`
 </div>
 </details>
 
+
+<!-- --------------------------------------
+     SECTION: 52-week trend (Registered vs Expected deaths)
+     Displays weekly registered deaths (bars) and expected deaths (line)
+     for the most recent 52 weeks
+--------------------------------------- -->
+
 <details open class="card accordion">
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
+
+<!-- Section title shown to users -->
 <h4 class="accordion-title">
 Provisional number of weekly registered deaths and expected weekly deaths for the past 52 weeks
 </h4>
 
-<span class="accordion-symbol" aria-hidden="true"></span>
+
+<!-- Accordion expand/collapse icon -->
+<span class="accordion-symbol" aria-hidden="true">
+</span>
 </div>
 </summary>
 
 <div class="card-body">
+
+
+<!-- Prompt mobile users to rotate screen for better viewing -->
 
 <div class="rotate-screen">
   <p>Please rotate your screen for optimal experience</p>
 </div>
 
 ```{r fig_overall_expected_repeat, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing registered deaths by week  alongside a line for expected deaths. Registered deaths fluctuate over time and generally track close to expected deaths, with some variation above and below the expected values."}
+
+
+# -------------------------
+# Prepare data
+# -------------------------
+
 df_observe_excess <- df_observe_excess %>%
   dplyr::mutate(
+    
+    # Ensure week_date is in Date format
     week_date = as.Date(week_date)
   ) %>%
   dplyr::arrange(week_date) %>%
+  
+  # Filter to most recent 52 weeks
   dplyr::filter(
     week_date >= max(week_date, na.rm = TRUE) - lubridate::weeks(52)
   ) %>%
   dplyr::mutate(
+    
+    # Create sequential index for x-axis
     week_num = dplyr::row_number(),
+    
+    
+    # Create offsets to align expected deaths line with bar edges (step-style line)
     bar_left = week_num - 0.50,
     bar_right = week_num + 0.40,
+    
+    # Extract month and year for axis labelling
     month = lubridate::floor_date(week_date, "month"),
     year = lubridate::year(week_date),
     month_label = format(week_date, "%b")
   )
+
+# -------------------------
+# Create custom x-axis ticks (monthly labels)
+# -------------------------
 
 month_ticks <- df_observe_excess %>%
   dplyr::group_by(month) %>%
   dplyr::slice(1) %>%
   dplyr::ungroup() %>%
   dplyr::mutate(
+    
+    # Identify where a new year starts
     year_marker = year != dplyr::lag(year, default = dplyr::first(year) - 1),
+    
+    # Add year to label when it changes
     x_tick_label = dplyr::if_else(
       year_marker,
       paste0(month_label, "<br>", year),
@@ -164,8 +244,13 @@ month_ticks <- df_observe_excess %>%
     )
   )
 
+# -------------------------
+# Prepare expected deaths line (step-style)
+# -------------------------
 df_expected_outline <- df_observe_excess %>%
   dplyr::select(week_label, week_date, EXPDTHS, bar_left, bar_right) %>%
+  
+  # Create two x-values per week (left and right edges)
   tidyr::pivot_longer(
     cols = c(bar_left, bar_right),
     names_to = "edge",
@@ -173,14 +258,23 @@ df_expected_outline <- df_observe_excess %>%
   ) %>%
   dplyr::arrange(x_outline)
 
+
+# -------------------------
+# Build Plotly chart
+# -------------------------
 plot_ly() %>%
+  
+  # Bars: Registered deaths
   add_bars(
     data = df_observe_excess,
     x = ~week_num,
     y = ~DTHSREGPROV,
     name = "Registered Deaths",
     marker = list(color = nisra_blue),
+    
+    # Show actual date in tooltip
     hovertext = ~week_date,
+    
     hovertemplate = paste(
       "<b>%{customdata}</b><br>",
       "Date: %{hovertext}<br>",
@@ -202,10 +296,19 @@ plot_ly() %>%
     ),
     customdata = ~week_label
   ) %>%
+  
+
+  # -------------------------
+  # Layout settings
+  # ------------------------
   layout(
     margin = list(t = 70),
+    
+    # Transparent backgrounds (to match dashboard theme)
     plot_bgcolor = "rgba(0,0,0,0)",
     paper_bgcolor = "rgba(0,0,0,0)",
+    
+    # Custom x-axis (month labels)
     xaxis = list(
       title = "Month",
       tickmode = "array",
@@ -226,10 +329,15 @@ plot_ly() %>%
       xanchor = "center",
       y = -0.25
     ),
+    
+    
+    # Small spacing between bars
     bargap = 0.05,
+    
+    # Manual y-axis title placement (for styling control)
     annotations = list(
       list(
-        text = "Number of Registered Deaths",
+        text = "Number of deaths",
         x = -0.06,
         y = 1.05,
         xref = "paper",
@@ -241,6 +349,9 @@ plot_ly() %>%
       )
     )
   ) %>%
+  
+  # Remove Plotly mode bar (toolbar)
+
   config(displayModeBar = FALSE)
 ```
 
@@ -257,12 +368,20 @@ f_make_tables(
 </div>
 </details>
 
+
+<!-- --------------------------------------
+     SECTION: Cause-specific deaths (Flu/Pneumonia & COVID-19)
+     Displays weekly deaths where these conditions are mentioned
+     on the death certificate
+--------------------------------------- -->
 <details open class="card accordion">
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
+
+<!-- Section title -->
 <h4 class="accordion-title">
-Number of Flu and / or Pneumonia and Covid-19 related weekly deaths registered
+Number of Flu/Pneumonia and COVID-19 related weekly deaths registered
 </h4>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
@@ -271,28 +390,40 @@ Number of Flu and / or Pneumonia and Covid-19 related weekly deaths registered
 
 <div class="card-body">
 
+
+<!-- Grid layout for responsive cards -->
 ::: {.grid}
 
+
+<!-- --------------------------------------
+     CARD 1: Flu / Pneumonia deaths
+--------------------------------------- -->
 ::: {.g-col-12 .g-col-md-6}
 ::: {.card-padding .d-flex .h-100}
 ::: {.card .w-100}
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### Flu and / or Pneumonia related deaths registered
+##### Flu/Pneumonia related deaths registered
 :::
 :::
 
 ::: {.card-body .text-center}
 
+
+<!-- Latest weekly value -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
 `r flu_wdths`
 </div>
 
+
+<!-- Week-on-week change with direction arrow -->
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
 `r abs(flu_wdths_diff)` `r flu_wdths_arrow` `r flu_wdths_single_plural` than previous week
 </div>
 
+
+<!-- Previous week reference -->
 <div class="fs-6 text-muted" style="text-align:left;">
 Previous week: `r flu_wdths_prev`
 </div>
@@ -302,26 +433,36 @@ Previous week: `r flu_wdths_prev`
 :::
 :::
 
+
+<!-- --------------------------------------
+     CARD 2: COVID-19 deaths
+--------------------------------------- -->
 ::: {.g-col-12 .g-col-md-6}
 ::: {.card-padding .d-flex .h-100}
 ::: {.card .w-100}
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### Covid-19 related deaths registered
+##### COVID-19 related deaths registered
 :::
 :::
 
 ::: {.card-body .text-center}
 
+
+<!-- Latest weekly value -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
 `r covid_wdths`
 </div>
 
+
+<!-- Week-on-week change with direction arrow -->
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
 `r abs(covid_wdths_diff)` `r covid_wdths_arrow` `r covid_wdths_single_plural` than previous week
 </div>
 
+
+<!-- Previous week reference -->
 <div class="fs-6 text-muted" style="text-align:left;">
 Previous week: `r covid_wdths_prev`
 </div>
@@ -338,6 +479,13 @@ Previous week: `r covid_wdths_prev`
 </div>
 </details>
 
+
+
+<!-- --------------------------------------
+     SECTION: Sex breakdown of deaths 
+     Displays weekly and year-to-date (YTD) deaths
+     for males and females, including proportions
+--------------------------------------- -->
 <details closed class="card accordion">
 
 <summary class="card-header accordion-header">
@@ -354,6 +502,10 @@ Sex breakdown of number of weekly deaths registered
 
 ::: {.grid}
 
+
+<!-- --------------------------------------
+     CARD 1: Female deaths
+--------------------------------------- -->
 ::: {.g-col-12 .g-col-md-6}
 ::: {.card-padding .d-flex .h-100}
 ::: {.card .w-100}
@@ -366,12 +518,16 @@ Sex breakdown of number of weekly deaths registered
 
 ::: {.card-body .text-center}
 
+
+<!-- Weekly female deaths -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
 `r female_wdths`
 </div>
 
+
+<!-- Year-to-date female deaths -->
 <div class="fs-6 text-muted" style="text-align:left;">
-YTD total female deaths: `r female_ytd_wdths`
+Year to date total female deaths: `r female_ytd_wdths`
 </div>
 
 :::
@@ -379,6 +535,9 @@ YTD total female deaths: `r female_ytd_wdths`
 :::
 :::
 
+<!-- --------------------------------------
+     CARD 2: Male deaths
+--------------------------------------- -->
 ::: {.g-col-12 .g-col-md-6}
 ::: {.card-padding .d-flex .h-100}
 ::: {.card .w-100}
@@ -391,12 +550,16 @@ YTD total female deaths: `r female_ytd_wdths`
 
 ::: {.card-body .text-center}
 
+
+<!-- Weekly male deaths -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
 `r male_wdths`
 </div>
 
+
+<!-- Year-to-date male deaths -->
 <div class="fs-6 text-muted" style="text-align:left;">
-YTD total male deaths: `r male_ytd_wdths`
+Year to date total male deaths: `r male_ytd_wdths`
 </div>
 
 :::
@@ -405,91 +568,16 @@ YTD total male deaths: `r male_ytd_wdths`
 :::
 
 :::
-
-::: {#age-tabs .panel-tabset}
-
-##### Weekly
-
-```{r sex_breakdown_pie_chart, echo = FALSE, fig.alt="A pie chart showing the proportion of male and female weekly deaths. The whole figures are reported above this pie chart."}
-plot_ly(
-  data = sex_pie_chart_wdths,
-  labels = ~sex,
-  values = ~value,
-  type = "pie",
-  textinfo = "label+percent",
-  textfont = list(color = '#FFFFFF', size = 16),
-  hoverinfo = "label+value+percent",
-    marker = list(
-    colors = c("Female" = nisra_blue, "Male" = nisra_navy)
-  )
-) %>%
-  layout(
-    plot_bgcolor = "rgba(0,0,0,0)",
-    paper_bgcolor = "rgba(0,0,0,0)",
-    title = "Proportion of female and male weekly deaths",
-    showlegend = TRUE,
-    legend = list(
-      font = list(size = 18),   # Increase legend text size
-      itemsizing = 'constant'   # Keep marker size constant in legend
-    )
-  ) %>%
-  config(displayModeBar = FALSE)
-```
-
-```{r download_wwekly_sex_deaths, echo = FALSE}
-# call make tables function to create chart download buttons
-f_make_tables(
-  data = sex_pie_chart_wdths,
-  title = "FemaleMaleWeekly",
-  data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
-)
-```
-
-##### YTD
-
-```{r ytd_sex_breakdown_pie_chart, echo = FALSE, fig.alt="A pie chart showing the proportion of male and female weekly deaths. The whole figures are reported above this pie chart."}
-plot_ly(
-  data = ytd_sex_pie_chart_wdths,
-  labels = ~sex,
-  values = ~value,
-  type = "pie",
-  textinfo = "label+percent",
-  textfont = list(color = '#FFFFFF', size = 16),
-  hoverinfo = "label+value+percent",
-    marker = list(
-    colors = c("Female" = nisra_blue, "Male" = nisra_navy)
-  )
-) %>%
-  layout(
-    plot_bgcolor = "rgba(0,0,0,0)",
-    paper_bgcolor = "rgba(0,0,0,0)",
-    title = "Proportion of female and male weekly deaths",
-    showlegend = TRUE,
-    legend = list(
-      font = list(size = 18),   # Increase legend text size
-      itemsizing = 'constant'   # Keep marker size constant in legend
-    )
-  ) %>%
-  config(displayModeBar = FALSE)
-```
-
-```{r download_ytd_sex_deaths, echo = FALSE}
-# call make tables function to create chart download buttons
-f_make_tables(
-  data = ytd_sex_pie_chart_wdths,
-  title = "FemaleMaleYTD",
-  data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
-)
-```
-::: 
-
 
 
 </div>
 </details>
 
+
+<!-- --------------------------------------
+     SECTION: Age breakdown of weekly deaths
+     Displays number of deaths by age band for most recent week
+--------------------------------------- -->
 <details closed class="card accordion">
 
 <summary class="card-header accordion-header">
@@ -520,16 +608,21 @@ Age breakdown of number of weekly deaths registered
 # max x-axis range
 max_x <- max(df_death_age$`Weekly Total`, na.rm = TRUE)
 
+# Create horizontal bar chart
 plot_ly(
   df_death_age,
   y = ~`Age band`,
   x = ~`Weekly Total`,
   type = "bar",
   orientation = "h",
+  
+  # Apply dashboard styling
   marker = list(
     color = nisra_blue,
     line = list(color = nisra_blue, width = 1)
   ),
+  
+  # Custom tooltip (cleaner than default hover)
   hoverinfo = "text",
   hovertemplate = "%{y}: %{x}<extra></extra>"
 ) %>%
@@ -554,6 +647,8 @@ plot_ly(
       tickcolor = '#FFFFFF',
       automargin = TRUE
     ),
+    
+    # Custom label for y-axis ("Age")
     annotations = list(         # plot title above y-axis title
       list(
         text = "Age",
@@ -568,6 +663,8 @@ plot_ly(
       )
     )
   ) %>%
+  
+  # Remove Plotly toolbar for cleaner dashboard display
   config(displayModeBar = FALSE)
 
 ```
@@ -582,11 +679,12 @@ f_make_tables(
 )
 ```
 
-##### YTD
+##### Year to date
 ```{r fig_age_ytd, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_age_ytd$`total_value`, na.rm = TRUE)
 
+# Create horizontal bar chart
 plot_ly(
   df_age_ytd,
   y = ~`Age band`,
@@ -597,6 +695,8 @@ plot_ly(
     color = nisra_blue,
     line = list(color = nisra_blue, width = 1)
   ),
+  
+  # Custom tooltip for clarity
   hoverinfo = "text",
   hovertemplate = "%{y}: %{x}<extra></extra>"
 ) %>%
@@ -621,6 +721,8 @@ plot_ly(
       tickcolor = '#FFFFFF',
       automargin = TRUE
     ),
+    
+    # Custom placement of y-axis title ("Age")
     annotations = list(         # plot title above y-axis title
       list(
         text = "Age",
@@ -635,6 +737,8 @@ plot_ly(
       )
     )
   ) %>%
+  
+  # Remove Plotly toolbar for cleaner presentation
   config(displayModeBar = FALSE)
 
 ```
@@ -657,6 +761,13 @@ f_make_tables(
 
 </div>
 </details>
+
+
+<!-- --------------------------------------
+     SECTION: LGD (Local Government District) breakdown
+     Displays weekly deaths geographically across NI districts
+     using a map with ranking categories
+--------------------------------------- -->
 
 <details closed class="card accordion">
 
@@ -796,7 +907,7 @@ f_make_tables(
 )
 ```
 
-##### YTD
+##### Year to date
 
 ```{r lgd_deaths_ytd_registered_map, fig.alt="Map showing the number of deaths across Local Government Districts for the YTD. Death counts vary by area, with some districts,like Belfast, showing higher numbers than others."}
 #| out-width: 100%
@@ -919,6 +1030,12 @@ f_make_tables(
 </div>
 </details>
 
+
+<!-- --------------------------------------
+     SECTION: Place of Death breakdown Displays number of deaths by place of occurrence
+     for the most recent week
+--------------------------------------- -->
+
 <details closed class="card accordion">
 
 <summary class="card-header accordion-header">
@@ -950,20 +1067,30 @@ cat_order <- df_pod$`Place of death`[
   order(df_pod$`Number of Deaths`, decreasing = TRUE)
 ]
 
+
+# -------------------------
+# Create horizontal bar chart
+# -------------------------
 fig_place <- plot_ly(
   df_pod,
   y = ~`Place of death`,
   x = ~`Number of Deaths`,
   type = "bar",
-  orientation = "h",
+  orientation = "h",  # horizontal bars
+  
+  # Apply consistent styling
   marker = list(
     color = nisra_blue,
     line = list(color = nisra_blue, width = 1)
   ),
+  
+  # Custom tooltip for clarity
   hoverinfo = "text",
   hovertemplate = "%{y}: %{x}<extra></extra>"
 ) %>%
   layout(
+    
+    # Space for custom axis title
     margin = list(t = 70),  # gives space above plot for y-axis title
     plot_bgcolor = "rgba(0,0,0,0)",
     paper_bgcolor = "rgba(0,0,0,0)",
@@ -978,6 +1105,8 @@ fig_place <- plot_ly(
     ),
     yaxis = list(
       title = "",
+      
+      # Apply custom ordering (descending values)
       categoryorder = "array",
       categoryarray = cat_order,
       tickfont = list(size = 14),
@@ -1000,8 +1129,12 @@ fig_place <- plot_ly(
       )
     )
   ) %>%
+  
+  # Remove Plotly toolbar for cleaner display
   config(displayModeBar = FALSE)
 
+
+# Print plot
 fig_place
 ```
 
@@ -1015,7 +1148,7 @@ f_make_tables(
 )
 ```
 
-##### YTD
+##### Year to date
 ```{r fig_place_ytd, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by place of occurrence for the year to date. Most deaths occur in hospitals and at home, with fewer deaths in care or nursing homes, and the lowest numbers in hospice and other locations."}
 # max x-axis range
 max_x <- max(df_ytd_pod$total_value, na.rm = TRUE)
@@ -1099,6 +1232,15 @@ f_make_tables(
 
 </details>
 
+
+<!-- --------------------------------------
+     SECTION: Registered deaths vs death occurrences (52-week view)
+     Displays comparison between:
+     - Registered deaths (based on registration date)
+     - Death occurrences (based on actual date of death)
+     over the most recent 52 weeks
+--------------------------------------- -->
+
 <details closed class="card accordion">
 
 <summary class="card-header accordion-header">
@@ -1107,6 +1249,7 @@ f_make_tables(
 Registered weekly deaths and death occurrences for the past 52 weeks
 </h4>
 
+<!-- Accordion expand/collapse icon -->
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
 </summary>
@@ -1114,12 +1257,16 @@ Registered weekly deaths and death occurrences for the past 52 weeks
 <div class="card-body">
 
 ```{r fig_overall_observe, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="r chart of registered deaths by week with a line showing deaths that occurred in each week. The two series follow a similar pattern over time, with weekly values generally close but with some variation between registered and occurred deaths."}
+
+# Create custom x-axis labels (months)
 month_ticks <- df_reg_vs_occ %>%
   dplyr::group_by(month) %>%
   dplyr::slice(1) %>%
   dplyr::ungroup() %>%
   dplyr::mutate(
+    # Identify where a new year begins
     year_marker = year != dplyr::lag(year, default = dplyr::first(year) - 1),
+    # Display year below month when it changes
     x_tick_label = dplyr::if_else(
       year_marker,
       paste0(month_label, "<br>", year),
@@ -1127,7 +1274,13 @@ month_ticks <- df_reg_vs_occ %>%
     )
   )
 
+# -------------------------
+# Build Plotly chart
+# -------------------------
+
 plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
+  
+  # Line 1: Registered deaths
   add_lines(
     y = ~`Registered Deaths`,
     name = "Registered Deaths",
@@ -1140,6 +1293,8 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
       "Registered Deaths: %{y}<extra></extra>"
     )
   ) %>%
+  
+  # Line 2: Death occurrences (actual date of death)
   add_lines(
     y = ~`Deaths Occurred`,
     name = "Death occurrences",
@@ -1152,6 +1307,10 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
       "Death occurrences: %{y}<extra></extra>"
     ) 
   ) %>%
+  
+  # -------------------------
+  # Layout settings
+  # -------------------------
   layout(
     margin = list(t = 70, b = 90),
     plot_bgcolor = "rgba(0,0,0,0)",
@@ -1192,6 +1351,8 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
       )
     )
   ) %>%
+  
+  # Remove Plotly toolbar
   config(displayModeBar = FALSE)
 ```
 
@@ -1208,6 +1369,11 @@ f_make_tables(
 </div>
 </details>
 
+
+<!-- --------------------------------------
+     SECTION: External links / related publications
+     Provides users with links to detailed reports and related statistics across UK regions
+--------------------------------------- -->
 <details class="card accordion">
 
 <summary class="card-header accordion-header">
@@ -1235,6 +1401,11 @@ Links to other publications on death registrations
 </div>
 </details>
 
+
+<!-- --------------------------------------
+     SECTION: Frequently Asked Questions (FAQs)
+     Explains key concepts, definitions, and data caveats to help users interpret the statistics correctly
+--------------------------------------- -->
 
 <details class="card accordion">
 
@@ -1289,6 +1460,12 @@ Other: Includes deaths at non-usual residences or any other locations not listed
 
 </div>
 </details>
+
+
+<!-- --------------------------------------
+     SCRIPT: Share functionality
+     Enables users to share or copy link to dashboard
+--------------------------------------- -->
 
 <script>
 function sharePage() {

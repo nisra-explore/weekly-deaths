@@ -39,7 +39,7 @@ Cause of death coding to the ICD-10 classification is carried out by ONS on NISR
 
 Due to user demand, NISRA will continue to publish a weekly, provisional estimate of Covid-19 related deaths in Northern Ireland, but will not include any other breakdowns. Further information on deaths caused by Covid-19 will be available in the [Registrar General Quarterly Tables](https://www.nisra.gov.uk/statistics/births-deaths-and-marriages/registrar-general-quarterly-tables).
 
-### Weekly deaths - ending `r pub_date_words_dmy`
+### Weekly deaths - ending `r week_ending`
 
 To meet user needs, NISRA publish timely but provisional counts of death registrations in Northern Ireland in our Weekly Deaths provisional dataset. To allow time for registration and processing, these figures are published 7 days after the week ends.
 
@@ -82,3 +82,10 @@ For further information on how accessible NISRA’s data visualisation websites 
 
 ## Contact information
 
+NISRA Vital Statistics,  
+Colby House,  
+Stranmillis Court,  
+Belfast  
+BT9 5RR  
+E-mail: [demography@nisra.gov.uk](mailto:demography@nisra.gov.uk)  
+Telephone: +44 (0)300 200 7836

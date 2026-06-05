@@ -8,6 +8,7 @@ source(paste0(here(), "/code/config.R"))
 # get current YYYY
 cur_year <- lubridate::year(Sys.Date())
 
+# create list of data portal URLs
 api_urls <- list(
   wdths     = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHS/CSV/1.0/en",
   wdthssxag = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSSXAG/CSV/1.0/en",
@@ -16,6 +17,7 @@ api_urls <- list(
   wdthsocc  = "https://ws-data.nisra.gov.uk/public/api.restful/PxStat.Data.Cube_API.ReadDataset/WDTHSOCC/CSV/1.0/en"
 )
 
+# creat function read_csv_api to read in csv(s) from API URL
 read_csv_api <- function(url) {
   read.csv(
     url,
@@ -24,25 +26,40 @@ read_csv_api <- function(url) {
   )
 }
 
+# lappy() will let you apply read_csv_api to  api_urls list
 datasets <- lapply(api_urls, read_csv_api)
 
+# add df_ prefix to name of dataframes
 names(datasets) <- paste0("df_", names(datasets))
 
+# make the dataframes available in the global environment
 list2env(datasets, envir = .GlobalEnv)
 
+# list objects in the current R environment with 'df_' prefix
 ls(pattern = "^df_")
 
 ##### Deaths registered vs excess deaths #####
 
+###### pull week ending date ######
+
+week_ending <- df_wdths %>%
+  filter(STATISTIC == "DTHSREGPROV") %>%
+  arrange(desc(`TLIST(W1)`)) %>%
+  slice(1) %>% # take top two rows (current and prev week)
+  pull('Week ending date')
+
+
 ###### reg weekly deaths #######
 
+# filter for 'Deaths Registered (Provisional)
 reg_wdths_vals <- df_wdths %>%
   filter(STATISTIC == "DTHSREGPROV") %>%
   arrange(desc(`TLIST(W1)`)) %>%
-  slice(1:2) %>%
-  pull(VALUE) %>%
+  slice(1:2) %>% # take top two rows (current and prev week)
+  pull(VALUE) %>% # pull values
   as.numeric()
 
+# calc registered weekly deaths - registered weekly deaths previous and set trend indicator
 reg_wdths <- reg_wdths_vals[1]
 reg_wdths_prev <- reg_wdths_vals[2]
 
@@ -53,6 +70,7 @@ reg_wdths_arrow <- ifelse(reg_wdths_diff > 0, "more",
 
 ###### expected weekly deaths #######
 
+# filter for expected deaths
 expect_wdths <- df_wdths %>%
   filter(
     STATISTIC == "EXPDTHS",
@@ -61,11 +79,13 @@ expect_wdths <- df_wdths %>%
   pull(VALUE) %>%
   as.numeric()
 
+# calc regsitered weekly deaths - expected deaths and set trend indicator
 diff_wdths <- reg_wdths - expect_wdths
 
 diff_arrow <- ifelse(diff_wdths > 0, "more",
                      ifelse(diff_wdths < 0, "fewer", "▬"))
 
+# filter for 'Deaths Registered (Provisional)
 reg_wdths_vals <- df_wdths %>%
   filter(STATISTIC == "DTHSREGPROV") %>%
   arrange(desc(`TLIST(W1)`)) %>%
@@ -73,16 +93,17 @@ reg_wdths_vals <- df_wdths %>%
   pull(VALUE) %>%
   as.numeric()
 
+# set trend indicator text
 expected_diff_text <- ifelse(
-  diff_wdths > 0,
-  paste(abs(diff_wdths), "above expected"),
-  ifelse(diff_wdths < 0,
-         paste(abs(diff_wdths), "below expected"),
-         "In line with expected")
+  diff_wdths > 0,                               # if reg_wdths - expect_wdths > 0
+  paste(abs(diff_wdths), "above expected"),     # above expected
+  ifelse(diff_wdths < 0,                            # if reg_wdths - expect_wdths < 0
+         paste(abs(diff_wdths), "below expected"),  # else below expected
+         "In line with expected")                   # else in line
 )
 
 ###### flu weekly deaths #######
-
+# filter for flu/pneumonia deaths
 flu_wdths_vals <- df_wdths %>%
   filter(STATISTIC == "FPDTHS") %>%
   arrange(desc(`TLIST(W1)`)) %>%
@@ -90,7 +111,7 @@ flu_wdths_vals <- df_wdths %>%
   pull(VALUE) %>%
   as.numeric()
 
-
+# calc flu deaths - flu deaths previous and set trend indicator
 flu_wdths <- flu_wdths_vals[1]
 flu_wdths_prev <- flu_wdths_vals[2]
 
@@ -104,7 +125,7 @@ flu_wdths_single_plural <- ifelse(flu_wdths_diff == 1, "death",
                            ifelse(flu_wdths_diff == 0, "-", 'deaths')))
 
 ###### covid weekly deaths #######
-
+# filter for covid deaths
 covid_wdths_vals <- df_wdths %>%
   filter(STATISTIC == "CVD19DTHS") %>%
   arrange(desc(`TLIST(W1)`)) %>%
@@ -112,7 +133,7 @@ covid_wdths_vals <- df_wdths %>%
   pull(VALUE) %>%
   as.numeric()
 
-
+# calc covid deaths - covid deaths previous and set trend indicator
 covid_wdths <- covid_wdths_vals[1]
 covid_wdths_prev <- covid_wdths_vals[2]
 
@@ -126,31 +147,37 @@ covid_wdths_single_plural <- ifelse(covid_wdths_diff == 1, "death",
                             ifelse(covid_wdths_diff == 0, "-", 'deaths')))
 
 ###### reg vs expected weekly deaths #######
+# filter on registered vs expected deaths
 df_observe_excess <- df_wdths %>%
   filter(STATISTIC %in% c("DTHSREGPROV", "EXPDTHS")) %>%
   select(STATISTIC, `TLIST(W1)`, VALUE) %>%
   mutate(
     VALUE = as.numeric(VALUE),
     week_label = str_sub(`TLIST(W1)`, -2),
+    # Convert week code to calendar date
     week_date = ISOweek::ISOweek2date(
       paste0(str_sub(`TLIST(W1)`, 1, 4), "-W", week_label, "-5")
     )
   ) %>%
   arrange(week_date) %>%
+  # Create separate columns for registered and expected deaths
   pivot_wider(
     names_from = STATISTIC,
     values_from = VALUE
   ) %>%
+  # Preserve week order
   mutate(
     week_label = factor(week_label, levels = unique(week_label))
   )
 
+# create rolling 52 week dataframe
 df_observe_excess <- df_observe_excess %>%
   dplyr::mutate(
     week_date = as.Date(week_date)
   ) %>%
   dplyr::arrange(week_date) %>%
   dplyr::slice_tail(n = 53) %>%
+  # Add week number and bar positioning for chart
   dplyr::mutate(
     week_num = dplyr::row_number(),
     bar_left = week_num - 0.50,
@@ -159,6 +186,7 @@ df_observe_excess <- df_observe_excess %>%
 
 ##### Sex breakdown #####
 
+# Extract latest week female and male deaths
 # Weekly
 female_wdths <- df_wdthssxag %>%
   filter(
@@ -178,6 +206,7 @@ male_wdths <- df_wdthssxag %>%
   pull(VALUE) %>%
   as.numeric()
 
+# Calculate year-to-date totals by sex
 # YTD
 df_ytd_SX <- df_wdthssxag %>%
   filter(grepl(cur_year, df_wdthssxag$`Week ending date`))
@@ -202,6 +231,7 @@ male_ytd_wdths <- df_ytd_SX %>%
   pull(VALUE) %>%
   as.numeric()
 
+# Create sex breakdown for pie charts (weekly and YTD)
 # Weekly
 sex_pie_chart_wdths <- tibble(
   sex = c("Female", "Male"),
@@ -217,12 +247,13 @@ ytd_sex_pie_chart_wdths <- tibble(
 
 ##### Age breakdown #####
 
-# slice off bottom 7 rows for most recent weeks numbers
+# Extract last 7 of age-stratified deaths
 df_death_age <- tail(df_wdthssxag, n=7)
 
+# Remove metadata columns
 df_death_age <- df_death_age[ , -c(1:7, 9)]
 
-# drop all places value
+# Remove total row
 df_death_age <- df_death_age[-c(7),]
 
 # rename Value column to number of deaths
@@ -231,40 +262,40 @@ colnames(df_death_age)[2] <- "Weekly Total"
 # make Weekly Total numeric 
 df_death_age$`Weekly Total` <- as.numeric(df_death_age$`Weekly Total`)
 
-#Remove 'Age' from bands
+# Clean age band labels
 df_death_age <- df_death_age %>%
   mutate(`Age band` = str_remove(`Age band`, "^Age\\s+"))
 
+# Calculate percentage of deaths in age 75+
 
-
-# % over 75 figure
 week_total = sum(df_death_age$`Weekly Total`)
 over_75 = sum(df_death_age$`Weekly Total`[df_death_age$Age %in% c("75-84", "85+")])
 over_75_pct = round((over_75/week_total)*100, 1) # round to 1 decimal point
 
-#YTD 
+# Calculate year-to-date age breakdown
 cur_year <- lubridate::year(Sys.Date())
 df_age_ytd <- df_wdthssxag %>%
   filter(grepl(cur_year, df_wdthssxag$`Week ending date`))
 
-# drop unneeded columns and group by place of death
+# Aggregate by age band
 df_age_ytd <- df_age_ytd %>%
   select(-c(1:7, 9)) %>%
   group_by(`Age band`) %>%
   summarise(total_value = sum(`VALUE`, na.rm = TRUE))
+# Remove total row
 df_age_ytd <- df_age_ytd [-c(7),]
 
-#Remove 'Age' from bands
+# Clean age band labels
 df_age_ytd <- df_age_ytd %>%
   mutate(`Age band` = str_remove(`Age band`, "^Age\\s+"))
 
 
 ##### LGD#####
-# Weekly numbers
+# Prepare weekly deaths by Local Government District (LGD)
 # Get latest available week
 latest_week <- max(df_wdthslgd$`TLIST(W1)`, na.rm = TRUE)
 
-# Filter to latest week
+# Extract latest week data
 df_rod <- df_wdthslgd %>%
   filter(`TLIST(W1)` == latest_week) %>%
   transmute(
@@ -273,10 +304,10 @@ df_rod <- df_wdthslgd %>%
   ) %>%
   arrange(desc(Number_of_Deaths))
 
-# Use latest week as week ending display
+# Store week label for display
 rod_week_ending <- latest_week
 
-# Prepare base df_map
+# Define map coordinates for each LGD
 df_map <- data.frame(
   LGDCode = c("N09000001","N09000011","N09000002","N09000003","N09000004",
               "N09000005","N09000006","N09000007","N09000009","N09000008","N09000010"),
@@ -284,14 +315,14 @@ df_map <- data.frame(
   lng = c(-6.1259, -5.6565, -6.4365, -5.95, -6.5574, -7.235, -7.4033, -6.0609, -6.73, -6.15, -6.203)
 )
 
-# Load spatial data
+# Load LGD boundary map
 df_lgd_map <- st_read(
   paste0(here(),"/maps/lgd/lgd_loughs_removed_simplified.shp"),
   quiet = TRUE
 ) %>%
   st_transform(crs = "+proj=longlat +datum=WGS84")
 
-# Merge and calculate thresholds
+# Join deaths data to map and set threshold at 60th percentile
 df_map <- df_lgd_map %>%
   left_join(df_map, by = "LGDCode") %>% 
   mutate(LGDNAME = gsub("and", "&", LGDNAME)) %>% 
@@ -303,10 +334,10 @@ df_map <- df_lgd_map %>%
 
 threshold <- quantile(df_map$num_deaths, 0.6, na.rm = TRUE)
 
-# Identify crowded LGD codes
+# Mark LGDs that need label positioning adjustment
 crowded_labels <- c("N09000003", "N09000011")
 
-# Add ranking by deaths (descending) and categorise into groups
+# Rank LGDs and categorize into groups for visualisation
 df_map <- df_map %>%
   arrange(desc(num_deaths)) %>%
   mutate(
@@ -329,7 +360,7 @@ df_map <- df_map %>%
                                      "10th - 11th Highest"))
   )
 
-# Add wrapped labels and logic
+# Prepare labels with text wrapping and colour scheme
 df_map <- df_map %>%
   mutate(
     lgd_wrapped = str_wrap(gsub("and", "&", LGDNAME), width = 13),
@@ -338,11 +369,11 @@ df_map <- df_map %>%
                           ifelse(num_deaths > threshold, "white", "black"))
   )
 
-# Subsets for plotting
+# Separate crowded from non-crowded LGDs for plotting
 crowded_df <- df_map %>% filter(LGDCode %in% crowded_labels)
 noncrowded_df <- df_map %>% filter(!LGDCode %in% crowded_labels)
 
-# Custom nudges
+# Adjust label positions for crowded areas
 crowded_df <- crowded_df %>%
   mutate(
     nudge_x = case_when(
@@ -355,8 +386,8 @@ crowded_df <- crowded_df %>%
     )
   )
 
-# YTD numbers
-# filter for current YYYY
+# Prepare year-to-date LGD data using same process
+# Sum year-to-date deaths by LGD
 df_ytd_wdthslgd <- df_wdthslgd %>%
   filter(grepl(cur_year, df_wdthslgd$`Week ending date`)) %>%
   transmute(
@@ -367,7 +398,7 @@ df_ytd_wdthslgd <- df_wdthslgd %>%
   summarise(Number_of_Deaths = sum(`Number_of_Deaths`, na.rm = TRUE)) %>%
   arrange(desc(Number_of_Deaths))
 
-# Prepare base df_map
+# Define coordinates for YTD map
 df_ytd_map <- data.frame(
   LGDCode = c("N09000001","N09000011","N09000002","N09000003","N09000004",
               "N09000005","N09000006","N09000007","N09000009","N09000008","N09000010"),
@@ -375,7 +406,7 @@ df_ytd_map <- data.frame(
   lng = c(-6.1259, -5.6565, -6.4365, -5.95, -6.5574, -7.235, -7.4033, -6.0609, -6.73, -6.15, -6.203)
 )
 
-# Merge and calculate thresholds
+# Join YTD deaths data to map
 df_ytd_map <- df_lgd_map %>%
   left_join(df_ytd_map, by = "LGDCode") %>% 
   mutate(LGDNAME = gsub("and", "&", LGDNAME)) %>% 
@@ -385,9 +416,10 @@ df_ytd_map <- df_lgd_map %>%
     by = "LGDCode"
   )
 
+# Calculate 60th percentile threshold for YTD
 threshold <- quantile(df_ytd_map$num_deaths, 0.6, na.rm = TRUE)
 
-# Add ranking by deaths (descending) and categorise into groups
+# Rank and categorize LGDs for YTD visualisation
 df_ytd_map <- df_ytd_map %>%
   arrange(desc(num_deaths)) %>%
   mutate(
@@ -410,7 +442,7 @@ df_ytd_map <- df_ytd_map %>%
                                         "10th - 11th Highest"))
   )
 
-# Add wrapped labels and logic
+# Prepare YTD labels and colours
 df_ytd_map <- df_ytd_map %>%
   mutate(
     lgd_wrapped = str_wrap(gsub("and", "&", LGDNAME), width = 13),
@@ -419,11 +451,11 @@ df_ytd_map <- df_ytd_map %>%
                           ifelse(num_deaths > threshold, "white", "black"))
   )
 
-# Subsets for plotting
+# Separate crowded and non-crowded LGDs for YTD
 crowded_ytd_df <- df_ytd_map %>% filter(LGDCode %in% crowded_labels)
 noncrowded_ytd_df <- df_ytd_map %>% filter(!LGDCode %in% crowded_labels)
 
-# Custom nudges
+# Adjust YTD label positions
 crowded_ytd_df <- crowded_ytd_df %>%
   mutate(
     nudge_x = case_when(
@@ -436,70 +468,64 @@ crowded_ytd_df <- crowded_ytd_df %>%
     )
   )
 
-# This is required for chart downloads
-# copy tibble as backup for next step and drop geometery columns
+# Prepare map data for download (remove spatial geometry columns)
 df_map_weekly <- df_map
 
-# remove sf class
+# Remove spatial class to allow export
 class(df_map_weekly) <- class(df_map_weekly)[class(df_map_weekly) != "sf"]
 
-# remove geometry columns before unlisting
+# Drop geometry columns
 df_map_weekly <- df_map_weekly[ , -c(5, 6, 8)]
 
-# unlist remaining columns for download
+# Unlist to flat data frame
 df_map_weekly[] <- lapply(df_map_weekly, unlist)
 
-# same again for df_map_ytd
-# copy tibble as backup for next step and drop geometery columns
+# Prepare YTD map data for download
 df_map_ytd <- df_ytd_map
 
-# remove sf class
+# Remove spatial class
 class(df_map_ytd) <- class(df_map_ytd)[class(df_map_ytd) != "sf"]
 
-# remove geometry columns before unlisting
+# Drop geometry columns
 df_map_ytd <- df_map_ytd[ , -c(5, 6, 8)]
 
-# unlist remaining columns for download
+# Unlist to flat data frame
 df_map_ytd[] <- lapply(df_map_ytd, unlist)
 
-
-
 ##### Place of death #####
-# weekly numbers
-# slice off bottom 6 rows for most recent weeks numbers
+# Prepare weekly place of death breakdown
 df_pod <- tail(df_wdthspod, n=6)
 
 # drop unneeded columns
+# Remove metadata columns
 df_pod <- df_pod[ , -c(1:5, 7)]
 
-# drop all places value
+# Remove all places total row
 df_pod <- df_pod[-c(6),]
 
-# rename Value column to number of deaths
+# Rename value column
 colnames(df_pod)[2] <- "Number of Deaths"
 
-# sort by descending # of deaths
+# Sort by highest deaths
 df_pod <- df_pod[order(-df_pod$`Number of Deaths`), ]
 
-# YTD numbers
-# filter for current YYYY
+# Prepare year-to-date place of death breakdown
 df_ytd_pod <- df_wdthspod %>%
   filter(grepl(cur_year, df_wdthspod$`Week ending date`))
 
-# drop unneeded columns and group by place of death
+# Sum by place of death
 df_ytd_pod <- df_ytd_pod %>%
   select(-c(1:5, 7)) %>%
   group_by(`Place of death`) %>%
   summarise(total_value = sum(`VALUE`, na.rm = TRUE))
 
-# sort by descending # of deaths and drop 'All places'
+# Sort by highest deaths and remove all places row
 df_ytd_pod <- df_ytd_pod[order(-df_ytd_pod$`total_value`), ]
-
 df_ytd_pod <- df_ytd_pod[-c(1),]
 
-
 ##### Registered vs Occurred #####
-# Get registered adnd occurred totals and rename columns
+# Compare registered deaths with deaths that occurred in latest 52 weeks
+# Extract registered deaths and parse dates
 df_number_registered <- df_wdths %>%
   dplyr::filter(STATISTIC == "DTHSREGPROV") %>%
   dplyr::transmute(
@@ -511,6 +537,7 @@ df_number_registered <- df_wdths %>%
     `Registered Deaths` = as.numeric(VALUE)
   )
 
+# Extract deaths that occurred
 df_number_occurred <- df_wdthsocc %>%
   dplyr::filter(STATISTIC == "DTHSOCCPROV") %>%
   dplyr::transmute(
@@ -518,6 +545,7 @@ df_number_occurred <- df_wdthsocc %>%
     `Deaths Occurred` = as.numeric(VALUE)
   )
 
+# Join registered and occurred deaths, keep last 52 weeks, add date features
 df_reg_vs_occ <- df_number_registered %>%
   dplyr::left_join(df_number_occurred, by = "TLIST(W1)") %>%
   dplyr::arrange(`Week ending date`) %>%

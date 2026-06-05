@@ -98,6 +98,53 @@ nav a {
   height: 60px;
 }
 
+/* Header background full-width, using same method as cookie banner */
+.full-bleed-header {
+  position: relative;
+  width: 100%;
+  background-color: #00205b;
+  z-index: 1;
+}
+
+.full-bleed-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50vw;
+  width: 200vw;
+  height: 100%;
+  background-color: #00205b;
+  z-index: -1;
+}
+
+.header-survey-row {
+  position: relative;
+  background-color: #3878c5;
+  z-index: 1;
+}
+
+.header-survey-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50vw;
+  width: 200vw;
+  height: 100%;
+  background-color: #3878c5;
+  z-index: -1;
+}
+
+.full-bleed-header .navbar-main-row {
+  max-width: 1080px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.full-bleed-header .text-white.text-center {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
 .app-title {
   min-width: 0;
   overflow-wrap: break-word;
@@ -142,7 +189,7 @@ nav a[target="_blank"]::after {
    =========================== */
 
 /* Scope to main so footer links aren’t doubled */
-main a[target="_blank"]::after {
+main a[target="_blank"]:not(.publication-action-button)::after {
   content: "";
   width: 14px;
   height: 11px;
@@ -163,7 +210,6 @@ main a[target="_blank"]::after {
   width: 50px;
   height: 50px;
 }
-
 .page-date-heading {
   display: flex;
   align-items: center;
@@ -173,17 +219,20 @@ main a[target="_blank"]::after {
   font-size: 1.2rem;
   font-weight: 500;
   color: #00205b;
-  margin: 1rem 1rem 1.5rem;
+  margin: 1rem 0 1.5rem;
   line-height: 1;
   border: 1px solid #dee2e6;
   border-radius: 0.375rem;
   padding: 0.75rem 1rem;
   background-color: #fff;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .page-date-text {
   display: inline-flex;
   align-items: center;
+  text-decoration: underline;
 }
 
 #title-block-header,
@@ -458,18 +507,56 @@ a.cookiesbarlink {
 }
 
 /* ===========================
-   Accordion cards
+   Accordion cards (Quarto/Bootstrap override)
    =========================== */
 
-.accordion > summary {
-  cursor: pointer;
-  list-style: none;
+/* Main accordion card */
+.card.accordion {
+  background-color: #f2f2f2 !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  overflow: hidden;
 }
 
-.accordion > summary::-webkit-details-marker {
+/* Header */
+.card.accordion > summary.card-header {
+  background-color: #e6e6e6 !important;
+  color: #000 !important;
+  padding: 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Remove default marker */
+.card.accordion > summary::-webkit-details-marker {
   display: none;
 }
 
+
+.card.accordion > summary.card-header:hover {
+  background-color: #d9d9d9;
+}
+
+/* Remove default triangle marker across all browsers */
+.card.accordion > summary {
+  list-style: none; /* fallback */
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.card.accordion > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Modern standard (Firefox etc.) */
+.card.accordion > summary::marker {
+  content: "";
+  display: none;
+}
+
+/* Title row */
 .accordion-title-row {
   display: flex;
   justify-content: space-between;
@@ -478,49 +565,41 @@ a.cookiesbarlink {
   gap: 1rem;
 }
 
+/* Title text */
 .accordion-title {
   flex: 1;
   margin: 0;
   display: flex;
   align-items: center;
+  color: #000 !important;
 }
 
-/* Accordion symbol: closed = right, open = down */
+/* Arrow */
 .accordion-symbol {
   margin-left: auto;
-  color: #fff;
-  font-family: 'Roboto', Arial, sans-serif;
+  color: #000;
   font-size: 28px;
-  line-height: 1;
-  font-weight: 400;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  /* small visual adjustment for the glyph */
-  position: relative;
-  top: -1px;
-
   transition: transform 0.2s ease;
-  transform-origin: center;
 }
 
-@media (min-width: 992px) {
-  .accordion-symbol {
-    font-size: 32px;
-  }
-}
-
+/* Arrow icon */
 .accordion-symbol::before {
   content: "›";
-  display: block;
-  line-height: 1;
 }
 
-/* open = rotate down */
-.accordion[open] .accordion-symbol {
+/* Rotate when open */
+.card.accordion[open] .accordion-symbol {
   transform: rotate(90deg);
+}
+
+/* Content area inside card */
+.card.accordion > *:not(summary) {
+  padding: 1rem;
+  background-color: #f2f2f2;
+  color: #000;
 }
 
 /* ===========================
@@ -533,34 +612,43 @@ a.cookiesbarlink {
   align-items: center !important;
   justify-content: flex-end !important;
   gap: 0.75rem !important;
-  margin: -0.5rem 1rem 0.5rem 1rem;
-  flex-wrap: wrap;
-  text-align: right !important;
+  margin: 0 !important;
+  flex-wrap: nowrap;
 }
 
 .publication-actions .publication-action-button {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background-color: #732777 !important;
-  color: #ffffff !important;
-  border: 0 !important;
-  border-radius: 4px !important;
-  padding: 0 1rem !important;
-  font-size: 16px !important;
+
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
   height: 40px !important;
   min-height: 40px !important;
-  min-width: 120px !important;
-  width: auto !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  background-color: #68a41e !important;
+  color: #000 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+
+  font-size: 16px !important;
+  line-height: 1 !important;
+  font-family: 'Roboto', Arial, sans-serif !important;
+
   cursor: pointer !important;
   text-align: center !important;
   text-decoration: none !important;
-  line-height: 40px !important;
-  font-family: 'Roboto', Arial, sans-serif !important;
   box-sizing: border-box !important;
-  margin: 0 !important;
   appearance: none !important;
   -webkit-appearance: none !important;
+}
+
+.publication-actions .publication-action-button::after {
+  content: none !important;
 }
 
 .publication-actions .publication-action-button:hover,
@@ -575,6 +663,12 @@ a.cookiesbarlink {
   outline-offset: 2px !important;
 }
 
+@media (max-width: 576px) {
+  .publication-actions {
+    justify-content: flex-start !important;
+    flex-wrap: wrap;
+  }
+}
 .page-date-heading .publication-actions {
   display: flex !important;
   flex-direction: row !important;
@@ -583,6 +677,10 @@ a.cookiesbarlink {
   gap: 0.75rem !important;
   margin: 0 !important;
   flex-wrap: wrap;
+}
+
+.publication-action-button::after {
+  content: none !important;
 }
 
 /* ===========================
@@ -623,4 +721,39 @@ a.cookiesbarlink {
 .xl-button2 a:hover {
   color: #ffffff;
   font-size: 14px;
+}
+
+/* ===========================
+   Tabs (panel-tabset styling)
+   =========================== */
+
+/* Tab container */
+.panel-tabset [role="tablist"] {
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 10px;
+}
+
+/* All tabs */
+.panel-tabset [role="tab"] {
+  background-color: #f2f5f8;   /* light grey */
+  color: #333;
+  padding: 8px 16px;
+  margin-right: 4px;
+  border-radius: 6px 6px 0 0;
+  font-weight: 500;
+  border: 1px solid #dee2e6;
+  border-bottom: none;
+}
+
+/* Active tab */
+.panel-tabset [role="tab"][aria-selected="true"] {
+  background-color: #00205b;  /* NISRA blue */
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Hover effect */
+.panel-tabset [role="tab"]:hover {
+  background-color: #dbe4f0;
+  cursor: pointer;
 }
