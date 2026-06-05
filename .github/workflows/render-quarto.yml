@@ -57,18 +57,11 @@ jobs:
       - name: Render Quarto site
         run: quarto render
 
-      - name: Commit results
-        run: |
-          git config --local user.email "explore@nisra.gov.uk"
-          git config --local user.name "nisra-explore"
-          git add -A docs
-          git commit -m "Data updated" || echo "No changes to commit"
-          git push origin || echo "No changes to push"
-
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
           path: docs
 
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v5
