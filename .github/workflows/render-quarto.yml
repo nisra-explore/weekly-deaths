@@ -6,7 +6,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "30 8,9 * * 5"
 
 permissions:
   contents: write
@@ -59,6 +59,14 @@ jobs:
 
       - name: Render Quarto site
         run: quarto render
+        
+      - name: Commit rendered site
+        run: |
+          git config --local user.email "explore@nisra.gov.uk"
+          git config --local user.name "nisra-explore"
+          git add -A docs
+          git commit -m "Data updated" || echo "No changes to commit"
+          git push origin main || echo "No changes to push"  
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v5
