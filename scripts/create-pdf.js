@@ -7,30 +7,82 @@ const path = require("path");
   const pdfPath = path.join(siteDir, "weekly-deaths.pdf");
 
   const browser = await chromium.launch();
+
   const page = await browser.newPage({
-    viewport: { width: 1440, height: 1200 }
+    viewport: {
+      width: 1600,
+      height: 1200
+    },
+    deviceScaleFactor: 1
   });
 
   await page.goto(htmlPath, { waitUntil: "networkidle" });
 
+  // Open all accordions/details before printing
   await page.evaluate(() => {
     document.querySelectorAll("details").forEach((el) => {
       el.setAttribute("open", "");
     });
   });
 
+  // Let plots/maps/layout settle
   await page.waitForTimeout(5000);
+
+  // Make sure the page itself is not constrained/cropped during print
+  await page.addStyleTag({
+    content: `
+      @media print {
+        @page {
+          size: 1600px auto;
+          margin: 20px;
+        }
+
+        html, body {
+          width: 1600px !important;
+          max-width: none !important;
+          overflow: visible !important;
+        }
+
+        body {
+          zoom: 1 !important;
+        }
+
+        main,
+        .content,
+        .page-layout-full,
+        .quarto-container,
+        .quarto-layout-panel,
+        .grid,
+        .card {
+          max-width: none !important;
+          overflow: visible !important;
+        }
+
+        .publication-actions,
+        #cookie-banner,
+        .cookies-infobar {
+          display: none !important;
+        }
+
+        details,
+        .accordion {
+          display: block !important;
+        }
+      }
+    `
+  });
 
   await page.pdf({
     path: pdfPath,
-    format: "A4",
     printBackground: true,
     preferCSSPageSize: true,
+    width: "1600px",
+    height: "2200px",
     margin: {
-      top: "12mm",
-      right: "12mm",
-      bottom: "12mm",
-      left: "12mm"
+      top: "20px",
+      right: "20px",
+      bottom: "20px",
+      left: "20px"
     }
   });
 
