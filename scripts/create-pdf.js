@@ -76,7 +76,7 @@ const path = require("path");
     path: pdfPath,
     printBackground: true,
     preferCSSPageSize: true,
-    width: "2000px",
+    width: "1800px",
     height: "2200px",
     margin: {
       top: "20px",
