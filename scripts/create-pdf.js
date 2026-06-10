@@ -2,7 +2,7 @@ const { chromium } = require("playwright");
 const path = require("path");
 
 (async () => {
-  const siteDir = path.resolve("_site");
+  const siteDir = path.resolve("docs");
   const htmlPath = "file://" + path.join(siteDir, "index.html").replace(/\\/g, "/");
   const pdfPath = path.join(siteDir, "weekly-deaths.pdf");
 
@@ -13,14 +13,12 @@ const path = require("path");
 
   await page.goto(htmlPath, { waitUntil: "networkidle" });
 
-  // Open all accordion/detail sections before printing.
   await page.evaluate(() => {
     document.querySelectorAll("details").forEach((el) => {
       el.setAttribute("open", "");
     });
   });
 
-  // Give plotly/leaflet/widgets a moment to settle after accordions open.
   await page.waitForTimeout(5000);
 
   await page.pdf({
