@@ -839,3 +839,23 @@ a.cookiesbarlink {
 .info-tab-btn:focus::after {
   filter: brightness(0) invert(1);
 }
+
+@media print {
+  .publication-actions,
+  #cookie-banner,
+  .cookies-infobar {
+    display: none !important;
+  }
+
+  body,
+  main {
+    background-color: #ffffff !important;
+  }
+
+  details,
+  .accordion,
+  .card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

@@ -56,9 +56,18 @@ jobs:
 
       - name: Restore R packages from renv.lock
         uses: r-lib/actions/setup-renv@v2
+        
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install --with-deps chromium
 
       - name: Render Quarto site
         run: quarto render
+      
+      - name: Create downloadable PDF
+        run: node scripts/create-pdf.js
         
       - name: Commit rendered site
         run: |
