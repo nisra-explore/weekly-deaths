@@ -182,11 +182,16 @@ Provisional number of weekly registered deaths and expected weekly deaths for th
 <div class="card-body">
 
 
+::: {.card-padding}
+::: {.card}
+
 <!-- Prompt mobile users to rotate screen for better viewing -->
 
 <div class="rotate-screen">
   <p>Please rotate your screen for optimal experience</p>
 </div>
+
+::: {.card-body}
 
 ```{r fig_overall_expected_repeat, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing registered deaths by week  alongside a line for expected deaths. Registered deaths fluctuate over time and generally track close to expected deaths, with some variation above and below the expected values."}
 
@@ -313,7 +318,9 @@ plot_ly() %>%
       title = "Month",
       tickmode = "array",
       tickvals = month_ticks$week_num,
-      ticktext = month_ticks$x_tick_label
+      ticktext = month_ticks$x_tick_label,
+      tickangle = 0,
+      automargin = TRUE
     ),
     yaxis = list(
       title = "",
@@ -365,6 +372,57 @@ f_make_tables(
 )
 ```
 
+:::
+:::
+
+<script src="scripts/info-boxes.js"></script>
+
+<div id="reg-info-boxes"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    populateInfoBoxes(
+  "reg-info-boxes",
+  [
+    "What is a registered death?",
+    "What is an expected death?"
+  ],
+  [
+    `
+      <p>
+        Registered deaths are counted based on the date the death is
+        officially recorded with the General Register Office. There is a
+        period of time between the date when a death occurs and the date it
+        is registered. The number of days between death occurrence and
+        registration varies, and can be greater in certain cases, for
+        example when a death is referred to a coroner.
+      </p>
+    `,
+    `
+      <p>
+        Expected deaths are an estimate of how many deaths would normally
+        occur, based on current population and historical trends. These are
+        used to compare with current figures. Expected deaths are calculated
+        using statistical methods based on historical data trends. More
+        information on the current method of estimating expected deaths and
+        calculating excess deaths is available in the ONS Methodology Paper:
+        <a
+          href="https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Estimating excess deaths in the UK, methodology changes - Office
+          for National Statistics
+        </a>.
+      </p>
+    `
+  ]
+);
+  });
+</script>
+
+:::
+
 </div>
 </details>
 
@@ -404,7 +462,7 @@ Number of Flu/Pneumonia and COVID-19 related weekly deaths registered
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### Flu/Pneumonia related deaths registered
+##### Flu/Pneumonia related weekly deaths registered
 :::
 :::
 
@@ -449,20 +507,14 @@ Previous week: `r flu_wdths_prev`
 
 ::: {.card-body .text-center}
 
-
-<!-- Latest weekly value -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
 `r covid_wdths`
 </div>
 
-
-<!-- Week-on-week change with direction arrow -->
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
 `r abs(covid_wdths_diff)` `r covid_wdths_arrow` `r covid_wdths_single_plural` than previous week
 </div>
 
-
-<!-- Previous week reference -->
 <div class="fs-6 text-muted" style="text-align:left;">
 Previous week: `r covid_wdths_prev`
 </div>
@@ -472,9 +524,36 @@ Previous week: `r covid_wdths_prev`
 :::
 :::
 
+
+<!-- --------------------------------------
+     INFO BOX: Definitions
+--------------------------------------- -->
+::: {.g-col-12}
+<div id="covid-info-boxes"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    populateInfoBoxes(
+      "covid-info-boxes",
+      [
+        "What counts as a COVID-19 or flu/pneumonia related death?"
+      ],
+      [
+        `
+          <p>
+            COVID-19 deaths include any mention of coronavirus, confirmed or
+            suspected, anywhere on the death certificate. Flu or pneumonia
+            related deaths include any mention of these conditions on the
+            death certificate.
+          </p>
+        `
+      ]
+    );
+  });
+</script>
 :::
 
-
+:::
 
 </div>
 </details>
@@ -635,7 +714,7 @@ plot_ly(
       range = c(0, max_x),
       autorange = FALSE,
       tick0 = 0,
-      dtick = 10,
+      ntick = 10,
       showline = TRUE,
       zerolinecolor = "#666666"
     ),
@@ -1023,9 +1102,35 @@ f_make_tables(
 :::
 
 :::
+<!-- --------------------------------------
+     INFO BOX: Definitions
+--------------------------------------- -->
+::: {.g-col-12}
+<div id="lgd-info-boxes"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    populateInfoBoxes(
+      "lgd-info-boxes",
+      [
+        "How are deaths assigned to areas (LGDs)?"
+      ],
+      [
+        `
+          <p>
+            Deaths are assigned based on the person’s usual residence 
+            (which can include care homes). If the person did not usually live 
+            in Northern Ireland, the death is assigned to the location of the 
+            place of death.
+          </p>
+        `
+      ]
+    );
+  });
+</script>
 :::
 
-
+:::
 
 </div>
 </details>
@@ -1050,9 +1155,16 @@ Place of Death breakdown of number of weekly deaths registered
 
 <div class="card-body" markdown="1">
 
+::: {.card-padding}
+::: {.card}
+
+<!-- Prompt mobile users to rotate screen for better viewing -->
+
 <div class="rotate-screen">
   <p>Please rotate your screen for optimal experience</p>
 </div>
+
+::: {.card-body}
 
 ::: {#pod-tabs .panel-tabset}
 
@@ -1099,7 +1211,7 @@ fig_place <- plot_ly(
       range = c(0, max_x),
       autorange = FALSE,
       tick0 = 0,
-      dtick = 10,
+      ntick = 10,
       showline = TRUE,
       zerolinecolor = "#666666"
     ),
@@ -1180,7 +1292,7 @@ fig_place_ytd <- plot_ly(
       range = c(0, max_x),
       autorange = FALSE,
       tick0 = 0,
-      dtick = 250,
+      ntick = 10,
       showline = TRUE,
       zerolinecolor = "#666666"
     ),
@@ -1222,11 +1334,38 @@ f_make_tables(
   data_dir = here("outputs/figdata"),
 )
 ```
-
-
+:::
+:::
 :::
 
+<!-- --------------------------------------
+     INFO BOX: Definitions
+--------------------------------------- -->
+::: {.g-col-12}
+<div id="pod-info-boxes"></div>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    populateInfoBoxes(
+      "pod-info-boxes",
+      [
+        "Place of Death note"
+      ],
+      [
+        `
+          <p>
+            Care/Nursing homes - only includes deaths that occurred in those 
+            settings. ‘Other’ includes deaths at non-usual residences or any 
+            other locations not listed.
+          </p>
+        `
+      ]
+    );
+  });
+</script>
+
+:::
+:::
 
 </div>
 
@@ -1255,6 +1394,17 @@ Registered weekly deaths and death occurrences for the past 52 weeks
 </summary>
 
 <div class="card-body">
+
+::: {.card-padding}
+::: {.card}
+
+<!-- Prompt mobile users to rotate screen for better viewing -->
+
+<div class="rotate-screen">
+  <p>Please rotate your screen for optimal experience</p>
+</div>
+
+::: {.card-body}
 
 ```{r fig_overall_observe, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="r chart of registered deaths by week with a line showing deaths that occurred in each week. The two series follow a similar pattern over time, with weekly values generally close but with some variation between registered and occurred deaths."}
 
@@ -1366,6 +1516,40 @@ f_make_tables(
 )
 ```
 
+:::
+:::
+
+<!-- --------------------------------------
+     INFO BOX: Definitions
+--------------------------------------- -->
+::: {.g-col-12}
+<div id="occ-info-boxes"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    populateInfoBoxes(
+      "occ-info-boxes",
+      [
+        "Death registration verse death occurrence"
+      ],
+      [
+        `
+          <p>
+            Occurred deaths (death occurrences) are based on the actual date the 
+            person died, regardless of when the death was registered. This means 
+            some most registered deaths may appear in a later week than when they 
+            actually happened. Most deaths in Northern Ireland are registered 
+            within 5 days. Delays can occur, especially around public holidays.
+          </p>
+        `
+      ]
+    );
+  });
+</script>
+
+:::
+:::
+
 </div>
 </details>
 
@@ -1427,36 +1611,28 @@ FAQs</h4>
 
 
 **2. Why might deaths appear in a different week than when they occurred?**  
-Deaths are shown based on the registration date, not the date of death.
-This means some deaths may appear in a later week than when they actually happened.
-Most deaths in Northern Ireland are registered within 5 days
-Delays can occur, especially around public holidays
+Deaths are shown based on the registration date, not the date of death. This means some deaths may appear in a later week than when they actually happened. Most deaths in Northern Ireland are registered within 5 days. Delays can occur, especially around public holidays.
 
 
-**3. Are weekly figures final?**  
-No — weekly figures are provisional.
-They may change as more data becomes available.
-Data are reviewed and updated quarterly as part of quality assurance
+**3. How are expected deaths calculated?**  
+Expected deaths are calculated using statistical methods based on historical data trends. More information on the current method of estimating expected deaths and calculating excess deaths is available in the ONS Methodology Paper at: [Estimating excess deaths in the UK, methodology changes - Office for National Statistics (ons.gov.uk)](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges)
 
 
-**4. How are expected deaths calculated?**  
-Expected deaths are calculated using statistical methods based on historical data trends.
-More information on the current method of estimating expected deaths and calculating excess deaths is available in the ONS Methodology Paper at: [Estimating excess deaths in the UK, methodology changes - Office for National Statistics (ons.gov.uk)](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges)
+**4. Are weekly figures final?**  
+No — weekly figures are provisional. They may change as more data becomes available. Data are reviewed and updated quarterly as part of quality assurance.
 
 
 **5. What counts as a COVID‑19 or flu-related death?**  
 COVID‑19 deaths include any mention of coronavirus (confirmed or suspected) anywhere on the death certificate
-Flu or pneumonia deaths include any mention of these conditions on the death certificate
+Flu or pneumonia deaths include any mention of these conditions on the death certificate.
 
 
 **6. How are deaths assigned to areas (LGDs)?**  
-Deaths are assigned based on the person’s usual residence (which can include care homes).
-If the person did not usually live in Northern Ireland, the death is assigned to the place of death
+Deaths are assigned based on the person’s usual residence (which can include care homes). If the person did not usually live in Northern Ireland, the death is assigned to the place of death.
 
 
 **7. What do the place of death categories mean?**  
-Care/Nursing homes: Only includes deaths that occurred in those settings
-Other: Includes deaths at non-usual residences or any other locations not listed
+Care/Nursing homes - only includes deaths that occurred in those settings. 'Other' includes deaths at non-usual residences or any other locations not listed.
 
 </div>
 </details>
