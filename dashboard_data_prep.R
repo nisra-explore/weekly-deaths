@@ -63,10 +63,15 @@ reg_wdths_vals <- df_wdths %>%
 reg_wdths <- reg_wdths_vals[1]
 reg_wdths_prev <- reg_wdths_vals[2]
 
+
 reg_wdths_diff <- reg_wdths - reg_wdths_prev
 
 reg_wdths_arrow <- ifelse(reg_wdths_diff > 0, "more",
                           ifelse(reg_wdths_diff < 0, "fewer", "▬"))
+
+reg_wdths_single_plural <- ifelse(reg_wdths_diff == 1, "death than previous week",
+                           ifelse(reg_wdths_diff == -1, "death than previous week",
+                           ifelse(reg_wdths_diff == 0, "no change from previous week", 'deaths than previous week')))
 
 ###### expected weekly deaths #######
 
@@ -83,7 +88,8 @@ expect_wdths <- df_wdths %>%
 diff_wdths <- reg_wdths - expect_wdths
 
 diff_arrow <- ifelse(diff_wdths > 0, "more",
-                     ifelse(diff_wdths < 0, "fewer", "▬"))
+                     ifelse(diff_wdths < 0, "fewer", "no change"))
+
 
 # filter for 'Deaths Registered (Provisional)
 reg_wdths_vals <- df_wdths %>%
@@ -120,9 +126,9 @@ flu_wdths_diff <- flu_wdths - flu_wdths_prev
 flu_wdths_arrow <- ifelse(flu_wdths_diff > 0, "more",
                           ifelse(flu_wdths_diff < 0, "fewer", "▬"))
 
-flu_wdths_single_plural <- ifelse(flu_wdths_diff == 1, "death",
-                           ifelse(flu_wdths_diff == -1, "death",
-                           ifelse(flu_wdths_diff == 0, "-", 'deaths')))
+flu_wdths_single_plural <- ifelse(flu_wdths_diff == 1, "death than previous week",
+                           ifelse(flu_wdths_diff == -1, "death than previous week",
+                           ifelse(flu_wdths_diff == 0, "no change from previous week", 'deaths than previous week')))
 
 ###### covid weekly deaths #######
 # filter for covid deaths
@@ -142,9 +148,9 @@ covid_wdths_diff <- covid_wdths - covid_wdths_prev
 covid_wdths_arrow <- ifelse(covid_wdths_diff > 0, "more",
                           ifelse(covid_wdths_diff < 0, "fewer", "▬"))
 
-covid_wdths_single_plural <- ifelse(covid_wdths_diff == 1, "death",
-                            ifelse(covid_wdths_diff == -1, "death",
-                            ifelse(covid_wdths_diff == 0, "-", 'deaths')))
+covid_wdths_single_plural <- ifelse(covid_wdths_diff == 1, "death than previous week",
+                            ifelse(covid_wdths_diff == -1, "death than previous week",
+                            ifelse(covid_wdths_diff == 0, "no change from previous week", 'deaths than previous week')))
 
 ###### reg vs expected weekly deaths #######
 # filter on registered vs expected deaths
@@ -376,7 +382,7 @@ df_map <- df_map %>%
 df_map <- df_map %>%
   mutate(
     lgd_wrapped = str_wrap(gsub("and", "&", LGDNAME), width = 13),
-    label_text = paste0(lgd_wrapped, " ", num_deaths),
+    label_text = paste0(lgd_wrapped, " ", scales::comma(num_deaths)),
     label_colour = ifelse(LGDCode %in% crowded_labels, "black",
                           ifelse(num_deaths > threshold, "white", "black"))
   )
@@ -458,7 +464,7 @@ df_ytd_map <- df_ytd_map %>%
 df_ytd_map <- df_ytd_map %>%
   mutate(
     lgd_wrapped = str_wrap(gsub("and", "&", LGDNAME), width = 13),
-    label_text = paste0(lgd_wrapped, " ", num_deaths),
+    label_text = paste0(lgd_wrapped, " ", scales::comma(num_deaths)),
     label_colour = ifelse(LGDCode %in% crowded_labels, "black",
                           ifelse(num_deaths > threshold, "white", "black"))
   )

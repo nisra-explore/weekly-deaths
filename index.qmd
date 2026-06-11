@@ -93,13 +93,13 @@ Provisional number of weekly deaths registered
 
 <!-- Weekly change compared with previous week -->
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
-`r abs(reg_wdths_diff)` `r reg_wdths_arrow` deaths than previous week
+`r abs(reg_wdths_diff)` `r reg_wdths_arrow` `r reg_wdths_single_plural`
 </div>
 
 
 <!-- Reference value from previous week -->
 <div class="fs-6 text-muted" style="text-align:left;">
-Previous week: `r reg_wdths_prev`
+Previous week: `r scales::comma(reg_wdths_prev)`
 </div>
 
 :::
@@ -141,7 +141,7 @@ Previous week: `r reg_wdths_prev`
 
 <!-- Expected deaths benchmark -->
 <div class="fs-6 text-muted" style="text-align:left;">
-Expected deaths: `r expect_wdths`
+Expected deaths: `r scales::comma(expect_wdths)`
 </div>
 
 :::
@@ -471,19 +471,19 @@ Number of Flu/Pneumonia and COVID-19 related weekly deaths registered
 
 <!-- Latest weekly value -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
-`r flu_wdths`
+`r scales::comma(flu_wdths)`
 </div>
 
 
 <!-- Week-on-week change with direction arrow -->
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
-`r abs(flu_wdths_diff)` `r flu_wdths_arrow` `r flu_wdths_single_plural` than previous week
+`r abs(flu_wdths_diff)` `r flu_wdths_arrow` `r flu_wdths_single_plural`
 </div>
 
 
 <!-- Previous week reference -->
 <div class="fs-6 text-muted" style="text-align:left;">
-Previous week: `r flu_wdths_prev`
+Previous week: `r scales::comma(flu_wdths_prev)`
 </div>
 
 :::
@@ -508,15 +508,15 @@ Previous week: `r flu_wdths_prev`
 ::: {.card-body .text-center}
 
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
-`r covid_wdths`
+`r scales::comma(covid_wdths)`
 </div>
 
 <div class="fs-6 fw-bold" style="color:#000000; text-align:left;">
-`r abs(covid_wdths_diff)` `r covid_wdths_arrow` `r covid_wdths_single_plural` than previous week
+`r abs(covid_wdths_diff)` `r covid_wdths_arrow` `r covid_wdths_single_plural`
 </div>
 
 <div class="fs-6 text-muted" style="text-align:left;">
-Previous week: `r covid_wdths_prev`
+Previous week: `r scales::comma(covid_wdths_prev)`
 </div>
 
 :::
@@ -600,13 +600,13 @@ Sex breakdown of number of weekly deaths registered
 
 <!-- Weekly female deaths -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
-`r female_wdths`
+`r scales::comma(female_wdths)`
 </div>
 
 
 <!-- Year-to-date female deaths -->
 <div class="fs-6 text-muted" style="text-align:left;">
-Year to date total female deaths: `r female_ytd_wdths`
+Year to date total female deaths: `r scales::comma(female_ytd_wdths)`
 </div>
 
 :::
@@ -632,13 +632,13 @@ Year to date total female deaths: `r female_ytd_wdths`
 
 <!-- Weekly male deaths -->
 <div class="fs-1 fw-bold" style="color:#00205b; text-align:left;">
-`r male_wdths`
+`r scales::comma(male_wdths)`
 </div>
 
 
 <!-- Year-to-date male deaths -->
 <div class="fs-6 text-muted" style="text-align:left;">
-Year to date total male deaths: `r male_ytd_wdths`
+Year to date total male deaths: `r scales::comma(male_ytd_wdths)`
 </div>
 
 :::
@@ -646,8 +646,33 @@ Year to date total male deaths: `r male_ytd_wdths`
 :::
 :::
 
-:::
+<!-- --------------------------------------
+     INFO BOX: Definitions
+--------------------------------------- -->
+::: {.g-col-12}
+<div id="ytd-info-boxes"></div>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    populateInfoBoxes(
+      "ytd-info-boxes",
+      [
+        "What figures are included year to date?"
+      ],
+      [
+        `
+          <p>
+            Year-to-date (YTD) figures refers to deaths registered in the period                     beginning on the first day of the current calendar year and 
+            extending up to `r week_ending`.
+          </p>
+        `
+      ]
+    );
+  });
+</script>
+
+:::
+:::
 
 </div>
 </details>
@@ -715,6 +740,7 @@ plot_ly(
       autorange = FALSE,
       tick0 = 0,
       ntick = 10,
+      tickformat = ",", 
       showline = TRUE,
       zerolinecolor = "#666666"
     ),
@@ -789,6 +815,7 @@ plot_ly(
       autorange = FALSE,
       tick0 = 0,
       ntick = 10,
+      tickformat = ",", 
       showline = TRUE,
       zerolinecolor = "#666666"
     ),
@@ -1212,6 +1239,7 @@ fig_place <- plot_ly(
       autorange = FALSE,
       tick0 = 0,
       ntick = 10,
+      tickformat = ",", 
       showline = TRUE,
       zerolinecolor = "#666666"
     ),
@@ -1293,6 +1321,7 @@ fig_place_ytd <- plot_ly(
       autorange = FALSE,
       tick0 = 0,
       ntick = 10,
+      tickformat = ",", 
       showline = TRUE,
       zerolinecolor = "#666666"
     ),
@@ -1530,7 +1559,7 @@ f_make_tables(
     populateInfoBoxes(
       "occ-info-boxes",
       [
-        "Death registration verse death occurrence"
+        "Death registration versus death occurrence"
       ],
       [
         `
