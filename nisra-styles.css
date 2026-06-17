@@ -839,3 +839,32 @@ a.cookiesbarlink {
 .info-tab-btn:focus::after {
   filter: brightness(0) invert(1);
 }
+
+#age-tabs .tab-content > .tab-pane,
+#pod-tabs .tab-content > .tab-pane {
+  display: block !important;
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+#age-tabs .tab-content > .tab-pane.active,
+#age-tabs .tab-content > .tab-pane.show,
+#pod-tabs .tab-content > .tab-pane.active,
+#pod-tabs .tab-content > .tab-pane.show {
+  visibility: visible;
+  height: auto;
+  overflow: visible;
+  opacity: 1;
+}
+
+#age-tabs .html-widget,
+#age-tabs .plotly,
+#age-tabs .js-plotly-plot,
+#pod-tabs .html-widget,
+#pod-tabs .plotly,
+#pod-tabs .js-plotly-plot {
+  width: 100% !important;
+  max-width: 100% !important;
+}

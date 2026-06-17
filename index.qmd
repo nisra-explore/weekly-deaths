@@ -354,7 +354,7 @@ plot_ly() %>%
   
   # Remove Plotly mode bar (toolbar)
 
-  config(displayModeBar = FALSE)
+  config(displayModeBar = FALSE, responsive = TRUE)
 ```  
 
 ```{r download_reg_deaths, echo = FALSE}
@@ -559,7 +559,7 @@ Previous week: `r scales::comma(covid_wdths_prev)`
      Displays weekly and year-to-date (YTD) deaths
      for males and females, including proportions
 --------------------------------------- -->
-<details closed class="card accordion">
+<details class="card accordion">
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
@@ -678,7 +678,7 @@ Year to date total male deaths: `r scales::comma(male_ytd_wdths)`
      SECTION: Age breakdown of weekly deaths
      Displays number of deaths by age band for most recent week
 --------------------------------------- -->
-<details closed class="card accordion">
+<details  class="card accordion">
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
@@ -690,7 +690,7 @@ Age breakdown of number of weekly deaths registered
 </div>
 </summary>
 
-<div class="card-body">
+<div class="card-body" markdown="1">
 
 ::: {.card-padding}
 ::: {.card}
@@ -701,10 +701,10 @@ Age breakdown of number of weekly deaths registered
 
 ::: {.card-body}
 
-::: {#age-tabs .panel-tabset}
+::: {#age-tabs .panel-tabset .plotly-tabset}
 
 ##### Weekly
-```{r fig_age, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
+```{r fig_age, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_death_age$`Weekly Total`, na.rm = TRUE)
 
@@ -715,7 +715,6 @@ plot_ly(
   x = ~`Weekly Total`,
   type = "bar",
   orientation = "h",
-  
   # Apply dashboard styling
   marker = list(
     color = nisra_blue,
@@ -766,7 +765,7 @@ plot_ly(
   ) %>%
   
   # Remove Plotly toolbar for cleaner dashboard display
-  config(displayModeBar = FALSE)
+  config(displayModeBar = FALSE, responsive = TRUE)
 
 ```
 
@@ -781,7 +780,7 @@ f_make_tables(
 ```
 
 ##### Year to date
-```{r fig_age_ytd, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
+```{r fig_age_ytd, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_age_ytd$`total_value`, na.rm = TRUE)
 
@@ -841,7 +840,7 @@ plot_ly(
   ) %>%
   
   # Remove Plotly toolbar for cleaner presentation
-  config(displayModeBar = FALSE)
+  config(displayModeBar = FALSE, responsive = TRUE)
 
 ```
 
@@ -871,7 +870,7 @@ f_make_tables(
      using a map with ranking categories
 --------------------------------------- -->
 
-<details closed class="card accordion">
+<details  class="card accordion">
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
@@ -1164,7 +1163,7 @@ f_make_tables(
      for the most recent week
 --------------------------------------- -->
 
-<details closed class="card accordion">
+<details  class="card accordion">
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
@@ -1189,7 +1188,7 @@ Place of death breakdown of number of weekly deaths registered
 
 ::: {.card-body}
 
-::: {#pod-tabs .panel-tabset}
+::: {#pod-tabs .panel-tabset .plotly-tabset}
 
 ##### Weekly
 
@@ -1266,7 +1265,7 @@ fig_place <- plot_ly(
   ) %>%
   
   # Remove Plotly toolbar for cleaner display
-  config(displayModeBar = FALSE)
+  config(displayModeBar = FALSE, responsive = TRUE)
 
 
 # Print plot
@@ -1344,7 +1343,7 @@ fig_place_ytd <- plot_ly(
       )
     )
   ) %>%
-  config(displayModeBar = FALSE)
+  config(displayModeBar = FALSE, responsive = TRUE)
 
 fig_place_ytd
 ```
@@ -1404,7 +1403,7 @@ f_make_tables(
      over the most recent 52 weeks
 --------------------------------------- -->
 
-<details closed class="card accordion">
+<details  class="card accordion">
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
@@ -1534,7 +1533,7 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
   ) %>%
   
   # Remove Plotly toolbar
-  config(displayModeBar = FALSE)
+  config(displayModeBar = FALSE, responsive = TRUE)
 ```
 
 ```{r download_reg_vs_occ_deaths, echo = FALSE}
@@ -1696,4 +1695,35 @@ function sharePage() {
     prompt("Copy this link:", window.location.href);
   }
 }
+</script>
+
+<script>
+(function () {
+  function resizePlotlyCharts() {
+    if (!window.Plotly) return;
+
+    document.querySelectorAll(".js-plotly-plot").forEach(function (plot) {
+      Plotly.Plots.resize(plot);
+    });
+  }
+
+  function scheduleResize() {
+    setTimeout(resizePlotlyCharts, 100);
+    setTimeout(resizePlotlyCharts, 300);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("shown.bs.tab", scheduleResize);
+
+    document.querySelectorAll("details").forEach(function (detailsElement) {
+      detailsElement.addEventListener("toggle", function () {
+        if (detailsElement.open) {
+          scheduleResize();
+        }
+      });
+    });
+
+    window.addEventListener("orientationchange", scheduleResize);
+  });
+})();
 </script>
