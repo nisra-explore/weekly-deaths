@@ -3,9 +3,9 @@ title: Weekly Deaths in Northern Ireland
 ---
 
 ```{r setup, warning = FALSE}
-# -------------------------
+
 # Load required packages
-# -------------------------
+
 library(here)
 library(dplyr)
 library(plotly)
@@ -22,10 +22,8 @@ source(here("dashboard_data_prep.R"))
 ```
 
 
-<!-- --------------------------------------
-     PAGE HEADER: Publication date + actions
-     Displays the latest week ending date and navigation buttons
---------------------------------------- -->
+<!-- PAGE HEADER: Publication date + actions
+     Displays the latest week ending date and navigation buttons -->
 
 <div class="page-date-heading">
   <!-- Dynamic publication date pulled from R -->
@@ -37,7 +35,6 @@ source(here("dashboard_data_prep.R"))
 <div class="publication-actions">
   <button class="publication-action-button" type="button" onclick="window.location.href='about.html'">About</button>
   <button class="publication-action-button" type="button" onclick="sharePage()">Share</button>
-  <button class="publication-action-button" type="button" onclick="window.location.href='weekly-deaths.pdf'">Download</button>
 </div>
 </div>
 </div>
@@ -66,9 +63,7 @@ Provisional number of weekly deaths registered
 ::: {.grid}
 
 
-<!-- --------------------------------------
-     CARD 1: Registered deaths
---------------------------------------- -->
+<!-- CARD 1: Registered deaths -->
 ::: {.g-col-12 .g-col-md-6}
 ::: {.card-padding .d-flex .h-100}
 ::: {.card .w-100}
@@ -193,12 +188,9 @@ Provisional number of weekly registered deaths and expected weekly deaths for th
 
 ::: {.card-body}
 
-```{r fig_overall_expected_repeat, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing registered deaths by week  alongside a line for expected deaths. Registered deaths fluctuate over time and generally track close to expected deaths, with some variation above and below the expected values."}
+```{r fig_overall_expected_repeat, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing registered deaths by week alongside a line for expected deaths. Registered deaths fluctuate over time and generally track close to expected deaths, with some variation above and below the expected values."}
 
-
-# -------------------------
 # Prepare data
-# -------------------------
 
 df_observe_excess <- df_observe_excess %>%
   dplyr::mutate(
@@ -217,7 +209,6 @@ df_observe_excess <- df_observe_excess %>%
     # Create sequential index for x-axis
     week_num = dplyr::row_number(),
     
-    
     # Create offsets to align expected deaths line with bar edges (step-style line)
     bar_left = week_num - 0.50,
     bar_right = week_num + 0.40,
@@ -228,14 +219,17 @@ df_observe_excess <- df_observe_excess %>%
     month_label = format(week_date, "%b")
   )
 
-# -------------------------
 # Create custom x-axis ticks (monthly labels)
-# -------------------------
+# Labels are positioned at the midpoint of each month to avoid crowding at the left edge.
 
 month_ticks <- df_observe_excess %>%
   dplyr::group_by(month) %>%
-  dplyr::slice(1) %>%
-  dplyr::ungroup() %>%
+  dplyr::summarise(
+    week_num = mean(range(week_num)),
+    month_label = dplyr::first(month_label),
+    year = dplyr::first(year),
+    .groups = "drop"
+  ) %>%
   dplyr::mutate(
     
     # Identify where a new year starts
@@ -249,9 +243,8 @@ month_ticks <- df_observe_excess %>%
     )
   )
 
-# -------------------------
 # Prepare expected deaths line (step-style)
-# -------------------------
+
 df_expected_outline <- df_observe_excess %>%
   dplyr::select(week_label, week_date, EXPDTHS, bar_left, bar_right) %>%
   
@@ -264,9 +257,8 @@ df_expected_outline <- df_observe_excess %>%
   dplyr::arrange(x_outline)
 
 
-# -------------------------
 # Build Plotly chart
-# -------------------------
+
 plot_ly() %>%
   
   # Bars: Registered deaths
@@ -281,7 +273,7 @@ plot_ly() %>%
     hovertext = ~week_date,
     
     hovertemplate = paste(
-      "<b>%{customdata}</b><br>",
+      "<b>Week %{customdata}</b><br>",
       "Date: %{hovertext}<br>",
       "Registered Deaths: %{y}<extra></extra>"
     ),
@@ -295,7 +287,7 @@ plot_ly() %>%
     line = list(color = nisra_navy, width = 3, shape = "hv"),
     hovertext = ~week_date,
     hovertemplate = paste(
-      "<b>%{customdata}</b><br>",
+      "<b>Week %{customdata}</b><br>",
       "Date: %{hovertext}<br>",
       "Expected Deaths: %{y}<extra></extra>"
     ),
@@ -303,9 +295,8 @@ plot_ly() %>%
   ) %>%
   
 
-  # -------------------------
   # Layout settings
-  # ------------------------
+
   layout(
     margin = list(t = 70),
     
@@ -320,7 +311,11 @@ plot_ly() %>%
       tickvals = month_ticks$week_num,
       ticktext = month_ticks$x_tick_label,
       tickangle = 0,
-      automargin = TRUE
+      automargin = TRUE,
+      range = c(
+        min(df_observe_excess$week_num, na.rm = TRUE) - 1,
+        max(df_observe_excess$week_num, na.rm = TRUE) + 1
+      )
     ),
     yaxis = list(
       title = "",
@@ -360,7 +355,7 @@ plot_ly() %>%
   # Remove Plotly mode bar (toolbar)
 
   config(displayModeBar = FALSE)
-```
+```  
 
 ```{r download_reg_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
@@ -400,12 +395,11 @@ f_make_tables(
     `,
     `
       <p>
-        Expected deaths are an estimate of how many deaths would normally
-        occur, based on current population and historical trends. These are
-        used to compare with current figures. Expected deaths are calculated
-        using statistical methods based on historical data trends. More
-        information on the current method of estimating expected deaths and
-        calculating excess deaths is available in the ONS Methodology Paper:
+        Expected deaths are an estimate of how many deaths would normally be 
+        expected to occur, based on current population and historical trends. 
+        These are used to compare with actual death registration figures. More 
+        information on the current method of estimating expected deaths and 
+        calculating excess deaths is available in the ONS Methodology Paper: 
         <a
           href="https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges"
           target="_blank"
@@ -657,13 +651,15 @@ Year to date total male deaths: `r scales::comma(male_ytd_wdths)`
     populateInfoBoxes(
       "ytd-info-boxes",
       [
-        "What figures are included year to date?"
+        "What figures are included in year-to-date?"
       ],
       [
         `
           <p>
-            Year-to-date (YTD) figures refers to deaths registered in the period                     beginning on the first day of the current calendar year and 
-            extending up to `r week_ending`.
+            Year to date (YTD) figures refer to deaths registered in the current 
+            annual reporting period. Please note, the first day of week 1 may 
+            fall in the previous calendar year, and the last day of week 52 may 
+            fall in the following calendar year. 
           </p>
         `
       ]
@@ -862,7 +858,7 @@ f_make_tables(
 
 :::
 :::
-
+:::
 
 
 </div>
@@ -1140,7 +1136,7 @@ f_make_tables(
     populateInfoBoxes(
       "lgd-info-boxes",
       [
-        "How are deaths assigned to areas (LGDs)?"
+        "How are deaths assigned to local government districts?"
       ],
       [
         `
@@ -1173,7 +1169,7 @@ f_make_tables(
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
 <h4 class="accordion-title">
-Place of Death breakdown of number of weekly deaths registered
+Place of death breakdown of number of weekly deaths registered
 </h4>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
@@ -1207,9 +1203,8 @@ cat_order <- df_pod$`Place of death`[
 ]
 
 
-# -------------------------
 # Create horizontal bar chart
-# -------------------------
+
 fig_place <- plot_ly(
   df_pod,
   y = ~`Place of death`,
@@ -1378,7 +1373,7 @@ f_make_tables(
     populateInfoBoxes(
       "pod-info-boxes",
       [
-        "Place of Death note"
+        "Place of death note"
       ],
       [
         `
@@ -1435,13 +1430,19 @@ Registered weekly deaths and death occurrences for the past 52 weeks
 
 ::: {.card-body}
 
-```{r fig_overall_observe, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="r chart of registered deaths by week with a line showing deaths that occurred in each week. The two series follow a similar pattern over time, with weekly values generally close but with some variation between registered and occurred deaths."}
+```{r fig_overall_observe, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="A chart of registered deaths by week with a line showing deaths that occurred in each week. The two series follow a similar pattern over time, with weekly values generally close but with some variation between registered and occurred deaths."}
 
 # Create custom x-axis labels (months)
+# Labels are positioned at the midpoint of each month to avoid crowding at the left edge.
+
 month_ticks <- df_reg_vs_occ %>%
   dplyr::group_by(month) %>%
-  dplyr::slice(1) %>%
-  dplyr::ungroup() %>%
+  dplyr::summarise(
+    `Week Number` = mean(range(`Week Number`)),
+    month_label = dplyr::first(month_label),
+    year = dplyr::first(year),
+    .groups = "drop"
+  ) %>%
   dplyr::mutate(
     # Identify where a new year begins
     year_marker = year != dplyr::lag(year, default = dplyr::first(year) - 1),
@@ -1453,9 +1454,7 @@ month_ticks <- df_reg_vs_occ %>%
     )
   )
 
-# -------------------------
 # Build Plotly chart
-# -------------------------
 
 plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
   
@@ -1476,20 +1475,19 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
   # Line 2: Death occurrences (actual date of death)
   add_lines(
     y = ~`Deaths Occurred`,
-    name = "Death occurrences",
+    name = "Death Occurrences",
     line = list(color = nisra_navy, width = 3),
     hovertext = ~week_ending_date,
     customdata = ~week_label_hover,
     hovertemplate = paste(
       "<b>Week %{customdata}</b><br>",
       "Date: %{hovertext}<br>",
-      "Death occurrences: %{y}<extra></extra>"
+      "Death Occurrences: %{y}<extra></extra>"
     ) 
   ) %>%
   
-  # -------------------------
   # Layout settings
-  # -------------------------
+
   layout(
     margin = list(t = 70, b = 90),
     plot_bgcolor = "rgba(0,0,0,0)",
@@ -1500,7 +1498,11 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
       tickvals = month_ticks$`Week Number`,
       ticktext = month_ticks$x_tick_label,
       tickangle = 0,
-      automargin = TRUE
+      automargin = TRUE,
+      range = c(
+        min(df_reg_vs_occ$`Week Number`, na.rm = TRUE) - 1,
+        max(df_reg_vs_occ$`Week Number`, na.rm = TRUE) + 1
+      )
     ),
     yaxis = list(
       title = "",
@@ -1538,7 +1540,7 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
 ```{r download_reg_vs_occ_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
-  data = df_reg_vs_occ,
+  data = df_reg_vs_occ_dl,
   title = "RegvsOcc",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
@@ -1603,9 +1605,9 @@ Links to other publications on death registrations
 
 - [Weekly death registrations in Northern Ireland](https://www.nisra.gov.uk/publications/weekly-death-registrations-northern-ireland-2026)
 
-- Statistics on deaths registered in Northern Ireland, including weekly death registrations and excess deaths. [Death Statistics](https://www.nisra.gov.uk/statistics/deaths/death-statistics)
+- [Death Statistics](https://www.nisra.gov.uk/statistics/deaths/death-statistics) - Statistics on deaths registered in Northern Ireland, including weekly death registrations and excess deaths.
 
-- Annual reports exploring specific causes of death, including alcohol, drug-related and suicide deaths in more detail. [Cause of Death statistics](https://www.nisra.gov.uk/statistics/births-deaths-and-marriages/cause-death)
+- [Cause of Death statistics](https://www.nisra.gov.uk/statistics/births-deaths-and-marriages/cause-death) - Annual reports exploring specific causes of death, including alcohol, drug-related and suicide deaths in more detail.
 
 - [Deaths registered weekly in England and Wales](https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales)
 
@@ -1642,26 +1644,28 @@ FAQs</h4>
 **2. Why might deaths appear in a different week than when they occurred?**  
 Deaths are shown based on the registration date, not the date of death. This means some deaths may appear in a later week than when they actually happened. Most deaths in Northern Ireland are registered within 5 days. Delays can occur, especially around public holidays.
 
+**3. What figures are included in year-to-date?**  
+Year to date (YTD) figures refer to deaths registered in the current annual reporting period. Please note, the first day of week 1 may fall in the previous calendar year, and the last day of week 52 may fall in the following calendar year. 
 
-**3. How are expected deaths calculated?**  
+**4. How are expected deaths calculated?**  
 Expected deaths are calculated using statistical methods based on historical data trends. More information on the current method of estimating expected deaths and calculating excess deaths is available in the ONS Methodology Paper at: [Estimating excess deaths in the UK, methodology changes - Office for National Statistics (ons.gov.uk)](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges)
 
 
-**4. Are weekly figures final?**  
+**5. Are weekly figures final?**  
 No — weekly figures are provisional. They may change as more data becomes available. Data are reviewed and updated quarterly as part of quality assurance.
 
 
-**5. What counts as a COVID‑19 or flu-related death?**  
-COVID‑19 deaths include any mention of coronavirus (confirmed or suspected) anywhere on the death certificate
+**6. What counts as a COVID‑19 or flu-related death?**  
+COVID‑19 deaths include any mention of coronavirus (confirmed or suspected) anywhere on the death certificate.
 Flu or pneumonia deaths include any mention of these conditions on the death certificate.
 
 
-**6. How are deaths assigned to areas (LGDs)?**  
-Deaths are assigned based on the person’s usual residence (which can include care homes). If the person did not usually live in Northern Ireland, the death is assigned to the place of death.
+**7. How are deaths assigned to local government districts?**  
+Deaths are assigned based on the person’s usual residence (which can include care/nursing homes). If the person did not usually live in Northern Ireland, the death is assigned to the place of death.
 
 
-**7. What do the place of death categories mean?**  
-Care/Nursing homes - only includes deaths that occurred in those settings. 'Other' includes deaths at non-usual residences or any other locations not listed.
+**8. What do the place of death categories mean?**  
+Care/nursing homes - only includes deaths that occurred in those settings. 'Other' includes deaths at non-usual residences or any other locations not listed.
 
 </div>
 </details>

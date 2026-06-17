@@ -104,18 +104,49 @@ f_make_tables <- function(data,
   )
   
   
-  addStyle(wb,
-           sheet = as.character(sheet),
-           style = data_style,
-           rows = r + seq_len(nrow(data)),
-           cols = 2:ncol(data),
-           gridExpand = TRUE
-  )
+  
+  # Identify column types
+  num_cols  <- which(sapply(data, is.numeric))
+  date_cols <- which(sapply(data, inherits, "Date"))
+  
+  # Remove date columns from numeric styling
+  num_cols <- setdiff(num_cols, date_cols)
+  
+  # Applying numeric styling ONLY to numeric columns
+  if (length(num_cols) > 0) {
+    addStyle(
+      wb,
+      sheet = as.character(sheet),
+      style = data_style,
+      rows = r + seq_len(nrow(data)),
+      cols = num_cols,
+      gridExpand = TRUE
+    )
+  }
+  
   
   # Source is added below last table
   
   setColWidths(wb, sheet, cols = 1, widths = 28)
   setColWidths(wb, sheet, cols = 2:length(data), widths = 14)
+  
+  
+  # Applying date styling (MUST be last)
+  if (length(date_cols) > 0) {
+    date_style <- createStyle(numFmt = "yyyy-mm-dd")
+    
+    addStyle(
+      wb,
+      sheet = as.character(sheet),
+      style = date_style,
+      rows = r + seq_len(nrow(data)),
+      cols = date_cols,
+      gridExpand = TRUE,
+      stack = TRUE
+    )
+  }
+  
+  
   
   # Workbook saved
   saveWorkbook(wb, paste0(data_dir, excel_file), overwrite = TRUE)
