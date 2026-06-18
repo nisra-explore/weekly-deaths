@@ -10,14 +10,9 @@
 html,
 body {
   margin: 0;
-  overflow-x: clip;
-}
-
-@supports not (overflow-x: clip) {
-  html,
-  body {
-    overflow-x: hidden;
-  }
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -91,13 +86,28 @@ main {
   min-height: 100vh;
 }
 
-.content {
-  max-width: 1080px;
-  margin-left: auto;
-  margin-right: auto;
-  background-color: transparent;
+main {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
+.content {
+  width: 100%;
+  max-width: 1080px;
+  min-width: 0;
+}
+
+@media screen and (max-width: 768px) {
+  html,
+  body,
+  main,
+  .content {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
 /* ===========================
    Header / Navbar
    =========================== */
@@ -519,12 +529,17 @@ a.cookiesbarlink {
    Rotate screen message
    =========================== */
 .rotate-screen {
-  display: none;
+  display: none !important;
+}
+
+.rotate-screen p {
+  margin: 0;
+  color: black;
 }
 
 @media screen and (max-width: 500px) and (orientation: portrait) {
   .rotate-screen {
-    display: block;
+    display: block !important;
     background-color: #dbe4f0;
     color: #00205b;
     border-left: 4px solid #00205b;
@@ -534,10 +549,11 @@ a.cookiesbarlink {
     text-align: center;
     font-weight: 500;
   }
+}
 
-  .rotate-screen p {
-    margin: 0;
-    color: black;
+@media screen and (orientation: landscape) {
+  .rotate-screen {
+    display: none !important;
   }
 }
 

@@ -219,8 +219,9 @@ df_observe_excess <- df_observe_excess %>%
     month_label = format(week_date, "%b")
   )
 
-# Create custom x-axis ticks (monthly labels)
-# Labels are positioned at the midpoint of each month to avoid crowding at the left edge.
+# Create custom x-axis ticks
+# Full labels are used on desktop.
+# Reduced labels are used on smaller screens to prevent crowding.
 
 month_ticks <- df_observe_excess %>%
   dplyr::group_by(month) %>%
@@ -240,8 +241,25 @@ month_ticks <- df_observe_excess %>%
       year_marker,
       paste0(month_label, "<br>", year),
       month_label
+    ),
+    
+    # Basic alternate-month mobile labels
+    show_mobile_tick = dplyr::row_number() %% 2 == 1 | year_marker,
+    
+    # Avoid crowding around the year change:
+    # hide labels immediately before and after the year marker on mobile
+    near_year_marker = dplyr::lag(year_marker, default = FALSE) |
+      dplyr::lead(year_marker, default = FALSE),
+    
+    show_mobile_tick = dplyr::if_else(
+      near_year_marker & !year_marker,
+      FALSE,
+      show_mobile_tick
     )
   )
+
+month_ticks_mobile <- month_ticks %>%
+  dplyr::filter(show_mobile_tick)
 
 # Prepare expected deaths line (step-style)
 
@@ -256,10 +274,9 @@ df_expected_outline <- df_observe_excess %>%
   ) %>%
   dplyr::arrange(x_outline)
 
-
 # Build Plotly chart
 
-plot_ly() %>%
+p <- plot_ly() %>%
   
   # Bars: Registered deaths
   add_bars(
@@ -279,6 +296,8 @@ plot_ly() %>%
     ),
     customdata = ~week_label
   ) %>%
+  
+  # Line: Expected deaths
   add_lines(
     data = df_expected_outline,
     x = ~x_outline,
@@ -294,17 +313,15 @@ plot_ly() %>%
     customdata = ~week_label
   ) %>%
   
-
   # Layout settings
-
   layout(
-    margin = list(t = 70),
+    margin = list(t = 70, b = 90),
     
-    # Transparent backgrounds (to match dashboard theme)
+    # Transparent backgrounds to match dashboard theme
     plot_bgcolor = "rgba(0,0,0,0)",
     paper_bgcolor = "rgba(0,0,0,0)",
     
-    # Custom x-axis (month labels)
+    # Custom x-axis month labels
     xaxis = list(
       title = "Month",
       tickmode = "array",
@@ -317,31 +334,33 @@ plot_ly() %>%
         max(df_observe_excess$week_num, na.rm = TRUE) + 1
       )
     ),
+    
     yaxis = list(
       title = "",
       rangemode = "tozero",
       ticks = "outside",
       ticklen = 8,
-      tickcolor = '#FFFFFF',
+      tickcolor = "#FFFFFF",
       automargin = TRUE
     ),
+    
     legend = list(
       orientation = "h",
-      x = 0.5,
-      xanchor = "center",
-      y = -0.25
+      x = 1,
+      y = 1.2,
+      xanchor = "right",
+      yanchor = "top"
     ),
-    
     
     # Small spacing between bars
     bargap = 0.05,
     
-    # Manual y-axis title placement (for styling control)
+    # Manual y-axis title placement
     annotations = list(
       list(
         text = "Number of deaths",
         x = -0.06,
-        y = 1.05,
+        y = 1,
         xref = "paper",
         yref = "paper",
         showarrow = FALSE,
@@ -352,10 +371,60 @@ plot_ly() %>%
     )
   ) %>%
   
-  # Remove Plotly mode bar (toolbar)
-
+  # Remove Plotly mode bar
   config(displayModeBar = FALSE, responsive = TRUE)
-```  
+
+# Switch to fewer x-axis labels on mobile or narrow/zoomed screens
+
+htmlwidgets::onRender(
+  p,
+  sprintf(
+    "
+    function(el, x) {
+      const fullTickVals = %s;
+      const fullTickText = %s;
+      const mobileTickVals = %s;
+      const mobileTickText = %s;
+
+      function updateTicks() {
+        const width = el.getBoundingClientRect().width;
+
+        if (width < 500) {
+          Plotly.relayout(el, {
+            'xaxis.tickvals': mobileTickVals,
+            'xaxis.ticktext': mobileTickText,
+            'xaxis.tickfont.size': 11,
+            'xaxis.title.standoff': 10,
+            'margin.b': 95
+          });
+        } else {
+          Plotly.relayout(el, {
+            'xaxis.tickvals': fullTickVals,
+            'xaxis.ticktext': fullTickText,
+            'xaxis.tickfont.size': 12,
+            'xaxis.title.standoff': 10,
+            'margin.b': 90
+          });
+        }
+      }
+
+      updateTicks();
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(updateTicks).observe(el);
+      } else {
+        window.addEventListener('resize', updateTicks);
+      }
+    }
+    ",
+    jsonlite::toJSON(month_ticks$week_num, auto_unbox = TRUE),
+    jsonlite::toJSON(month_ticks$x_tick_label, auto_unbox = TRUE),
+    jsonlite::toJSON(month_ticks_mobile$week_num, auto_unbox = TRUE),
+    jsonlite::toJSON(month_ticks_mobile$x_tick_label, auto_unbox = TRUE)
+  )
+)
+
+```
 
 ```{r download_reg_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
@@ -399,12 +468,11 @@ f_make_tables(
         expected to occur, based on current population and historical trends. 
         These are used to compare with actual death registration figures. More 
         information on the current method of estimating expected deaths and 
-        calculating excess deaths is available in the ONS Methodology Paper: 
+        calculating excess deaths is available in the Office for National Statistics (ONS) Methodology Paper: 
         <a
           href="https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges"
           target="_blank"
-          rel="noopener noreferrer"
-        >
+          rel="noopener noreferrer"        >
           Estimating excess deaths in the UK, methodology changes - Office
           for National Statistics
         </a>.
@@ -433,7 +501,7 @@ f_make_tables(
 
 <!-- Section title -->
 <h4 class="accordion-title">
-Number of Flu/Pneumonia and COVID-19 related weekly deaths registered
+Number of Flu or Pneumonia and COVID-19 related weekly deaths registered
 </h4>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
@@ -456,7 +524,7 @@ Number of Flu/Pneumonia and COVID-19 related weekly deaths registered
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### Flu/Pneumonia related weekly deaths registered
+##### Flu or Pneumonia related weekly deaths registered
 :::
 :::
 
@@ -530,13 +598,13 @@ Previous week: `r scales::comma(covid_wdths_prev)`
     populateInfoBoxes(
       "covid-info-boxes",
       [
-        "What counts as a COVID-19 or flu/pneumonia related death?"
+        "What counts as a COVID-19 or flu or pneumonia related death?"
       ],
       [
         `
           <p>
             COVID-19 deaths include any mention of coronavirus, confirmed or
-            suspected, anywhere on the death certificate. Flu or pneumonia
+            suspected, anywhere on the death certificate. Flu or Pneumonia
             related deaths include any mention of these conditions on the
             death certificate.
           </p>
@@ -556,7 +624,7 @@ Previous week: `r scales::comma(covid_wdths_prev)`
 
 <!-- --------------------------------------
      SECTION: Sex breakdown of deaths 
-     Displays weekly and year-to-date (YTD) deaths
+     Displays weekly and year to date (YTD) deaths
      for males and females, including proportions
 --------------------------------------- -->
 <details class="card accordion">
@@ -598,7 +666,7 @@ Sex breakdown of number of weekly deaths registered
 </div>
 
 
-<!-- Year-to-date female deaths -->
+<!-- Year to date female deaths -->
 <div class="fs-6 text-muted" style="text-align:left;">
 Year to date total female deaths: `r scales::comma(female_ytd_wdths)`
 </div>
@@ -630,7 +698,7 @@ Year to date total female deaths: `r scales::comma(female_ytd_wdths)`
 </div>
 
 
-<!-- Year-to-date male deaths -->
+<!-- Year to date male deaths -->
 <div class="fs-6 text-muted" style="text-align:left;">
 Year to date total male deaths: `r scales::comma(male_ytd_wdths)`
 </div>
@@ -651,7 +719,7 @@ Year to date total male deaths: `r scales::comma(male_ytd_wdths)`
     populateInfoBoxes(
       "ytd-info-boxes",
       [
-        "What figures are included in year-to-date?"
+        "What figures are included in year to date?"
       ],
       [
         `
@@ -780,7 +848,7 @@ f_make_tables(
 ```
 
 ##### Year to date
-```{r fig_age_ytd, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
+```{r fig_age_ytd, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group from the start of the year. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_age_ytd$`total_value`, na.rm = TRUE)
 
@@ -1141,9 +1209,9 @@ f_make_tables(
         `
           <p>
             Deaths are assigned based on the person’s usual residence 
-            (which can include care homes). If the person did not usually live 
-            in Northern Ireland, the death is assigned to the location of the 
-            place of death.
+            (which can include care or nursing homes). If the person did not 
+            usually live in Northern Ireland, the death is assigned to the 
+            location of the place of death.
           </p>
         `
       ]
@@ -1377,7 +1445,7 @@ f_make_tables(
       [
         `
           <p>
-            Care/Nursing homes - only includes deaths that occurred in those 
+            Care or nursing homes - only includes deaths that occurred in those 
             settings. ‘Other’ includes deaths at non-usual residences or any 
             other locations not listed.
           </p>
@@ -1431,8 +1499,10 @@ Registered weekly deaths and death occurrences for the past 52 weeks
 
 ```{r fig_overall_observe, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="A chart of registered deaths by week with a line showing deaths that occurred in each week. The two series follow a similar pattern over time, with weekly values generally close but with some variation between registered and occurred deaths."}
 
-# Create custom x-axis labels (months)
-# Labels are positioned at the midpoint of each month to avoid crowding at the left edge.
+# Create custom x-axis labels
+# Full labels are used on desktop.
+# Reduced labels are used on smaller screens to prevent crowding.
+# Labels immediately before and after the year-change label are hidden on mobile.
 
 month_ticks <- df_reg_vs_occ %>%
   dplyr::group_by(month) %>%
@@ -1443,19 +1513,38 @@ month_ticks <- df_reg_vs_occ %>%
     .groups = "drop"
   ) %>%
   dplyr::mutate(
+    
     # Identify where a new year begins
     year_marker = year != dplyr::lag(year, default = dplyr::first(year) - 1),
+    
     # Display year below month when it changes
     x_tick_label = dplyr::if_else(
       year_marker,
       paste0(month_label, "<br>", year),
       month_label
+    ),
+    
+    # Basic alternate-month mobile labels
+    show_mobile_tick = dplyr::row_number() %% 2 == 1 | year_marker,
+    
+    # Avoid crowding around the year change:
+    # hide labels immediately before and after the year marker on mobile
+    near_year_marker = dplyr::lag(year_marker, default = FALSE) |
+      dplyr::lead(year_marker, default = FALSE),
+    
+    show_mobile_tick = dplyr::if_else(
+      near_year_marker & !year_marker,
+      FALSE,
+      show_mobile_tick
     )
   )
 
+month_ticks_mobile <- month_ticks %>%
+  dplyr::filter(show_mobile_tick)
+
 # Build Plotly chart
 
-plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
+p <- plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
   
   # Line 1: Registered deaths
   add_lines(
@@ -1471,7 +1560,7 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
     )
   ) %>%
   
-  # Line 2: Death occurrences (actual date of death)
+  # Line 2: Death occurrences, actual date of death
   add_lines(
     y = ~`Deaths Occurred`,
     name = "Death Occurrences",
@@ -1486,11 +1575,12 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
   ) %>%
   
   # Layout settings
-
   layout(
     margin = list(t = 70, b = 90),
+    
     plot_bgcolor = "rgba(0,0,0,0)",
     paper_bgcolor = "rgba(0,0,0,0)",
+    
     xaxis = list(
       title = "Month",
       tickmode = "array",
@@ -1503,25 +1593,29 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
         max(df_reg_vs_occ$`Week Number`, na.rm = TRUE) + 1
       )
     ),
+    
     yaxis = list(
       title = "",
       rangemode = "tozero",
       ticks = "outside",
       ticklen = 8,
-      tickcolor = '#FFFFFF',
+      tickcolor = "#FFFFFF",
       automargin = TRUE
     ),
+    
     legend = list(
       orientation = "h",
-      x = 0.5,
-      xanchor = "center",
-      y = -0.25
+      x = 1,
+      y = 1.2,
+      xanchor = "right",
+      yanchor = "top"
     ),
+    
     annotations = list(
       list(
         text = "Number of Deaths",
         x = -0.06,
-        y = 1.05,
+        y = 1,
         xref = "paper",
         yref = "paper",
         showarrow = FALSE,
@@ -1534,6 +1628,56 @@ plot_ly(df_reg_vs_occ, x = ~`Week Number`) %>%
   
   # Remove Plotly toolbar
   config(displayModeBar = FALSE, responsive = TRUE)
+
+# Switch to fewer x-axis labels on mobile or narrow/zoomed screens
+
+htmlwidgets::onRender(
+  p,
+  sprintf(
+    "
+    function(el, x) {
+      const fullTickVals = %s;
+      const fullTickText = %s;
+      const mobileTickVals = %s;
+      const mobileTickText = %s;
+
+      function updateTicks() {
+        const width = el.getBoundingClientRect().width;
+
+        if (width < 500) {
+          Plotly.relayout(el, {
+            'xaxis.tickvals': mobileTickVals,
+            'xaxis.ticktext': mobileTickText,
+            'xaxis.tickfont.size': 11,
+            'xaxis.title.standoff': 10,
+            'margin.b': 95
+          });
+        } else {
+          Plotly.relayout(el, {
+            'xaxis.tickvals': fullTickVals,
+            'xaxis.ticktext': fullTickText,
+            'xaxis.tickfont.size': 12,
+            'xaxis.title.standoff': 10,
+            'margin.b': 90
+          });
+        }
+      }
+
+      updateTicks();
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(updateTicks).observe(el);
+      } else {
+        window.addEventListener('resize', updateTicks);
+      }
+    }
+    ",
+    jsonlite::toJSON(month_ticks$`Week Number`, auto_unbox = TRUE),
+    jsonlite::toJSON(month_ticks$x_tick_label, auto_unbox = TRUE),
+    jsonlite::toJSON(month_ticks_mobile$`Week Number`, auto_unbox = TRUE),
+    jsonlite::toJSON(month_ticks_mobile$x_tick_label, auto_unbox = TRUE)
+  )
+)
 ```
 
 ```{r download_reg_vs_occ_deaths, echo = FALSE}
@@ -1643,7 +1787,7 @@ FAQs</h4>
 **2. Why might deaths appear in a different week than when they occurred?**  
 Deaths are shown based on the registration date, not the date of death. This means some deaths may appear in a later week than when they actually happened. Most deaths in Northern Ireland are registered within 5 days. Delays can occur, especially around public holidays.
 
-**3. What figures are included in year-to-date?**  
+**3. What figures are included in year to date?**  
 Year to date (YTD) figures refer to deaths registered in the current annual reporting period. Please note, the first day of week 1 may fall in the previous calendar year, and the last day of week 52 may fall in the following calendar year. 
 
 **4. How are expected deaths calculated?**  
@@ -1660,11 +1804,11 @@ Flu or pneumonia deaths include any mention of these conditions on the death cer
 
 
 **7. How are deaths assigned to local government districts?**  
-Deaths are assigned based on the person’s usual residence (which can include care/nursing homes). If the person did not usually live in Northern Ireland, the death is assigned to the place of death.
+Deaths are assigned based on the person’s usual residence (which can include care or nursing homes). If the person did not usually live in Northern Ireland, the death is assigned to the place of death.
 
 
 **8. What do the place of death categories mean?**  
-Care/nursing homes - only includes deaths that occurred in those settings. 'Other' includes deaths at non-usual residences or any other locations not listed.
+Care or nursing homes - only includes deaths that occurred in those settings. 'Other' includes deaths at non-usual residences or any other locations not listed.
 
 </div>
 </details>
