@@ -46,9 +46,9 @@ source(here("dashboard_data_prep.R"))
 
 
 <!-- Section title shown to users -->
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Provisional number of weekly deaths registered
-</h4>
+</h2>
 
 
 <!-- Accordion expand/collapse icon -->
@@ -73,7 +73,7 @@ Provisional number of weekly deaths registered
 
 
 <!-- Card title -->
-##### Deaths Registered
+### Deaths Registered
 :::
 :::
 
@@ -115,7 +115,7 @@ Previous week: `r scales::comma(reg_wdths_prev)`
 
 
 <!-- Card title -->
-##### Comparison with expected deaths
+### Comparison with expected deaths
 :::
 :::
 
@@ -163,9 +163,9 @@ Expected deaths: `r scales::comma(expect_wdths)`
 <div class="accordion-title-row">
 
 <!-- Section title shown to users -->
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Provisional number of weekly registered deaths and expected weekly deaths for the past 52 weeks
-</h4>
+</h2>
 
 
 <!-- Accordion expand/collapse icon -->
@@ -500,9 +500,9 @@ f_make_tables(
 <div class="accordion-title-row">
 
 <!-- Section title -->
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Number of Flu or Pneumonia and COVID-19 related weekly deaths registered
-</h4>
+</h2>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
@@ -524,7 +524,7 @@ Number of Flu or Pneumonia and COVID-19 related weekly deaths registered
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### Flu or Pneumonia related weekly deaths registered
+### Flu or Pneumonia related weekly deaths registered
 :::
 :::
 
@@ -563,7 +563,7 @@ Previous week: `r scales::comma(flu_wdths_prev)`
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### COVID-19 related deaths registered
+### COVID-19 related deaths registered
 :::
 :::
 
@@ -631,9 +631,9 @@ Previous week: `r scales::comma(covid_wdths_prev)`
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Sex breakdown of number of weekly deaths registered
-</h4>
+</h2>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
@@ -653,7 +653,7 @@ Sex breakdown of number of weekly deaths registered
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### Number of female weekly deaths registered
+### Number of female weekly deaths registered
 :::
 :::
 
@@ -685,7 +685,7 @@ Year to date total female deaths: `r scales::comma(female_ytd_wdths)`
 
 ::: {.card-header}
 ::: {style="text-align: left;"}
-##### Number of male weekly deaths registered
+### Number of male weekly deaths registered
 :::
 :::
 
@@ -750,9 +750,9 @@ Year to date total male deaths: `r scales::comma(male_ytd_wdths)`
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Age breakdown of number of weekly deaths registered
-</h4>
+</h2>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
@@ -771,7 +771,7 @@ Age breakdown of number of weekly deaths registered
 
 ::: {#age-tabs .panel-tabset .plotly-tabset}
 
-##### Weekly
+### Weekly
 ```{r fig_age, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_death_age$`Weekly Total`, na.rm = TRUE)
@@ -847,7 +847,7 @@ f_make_tables(
 )
 ```
 
-##### Year to date
+### Year to date
 ```{r fig_age_ytd, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group from the start of the year. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_age_ytd$`total_value`, na.rm = TRUE)
@@ -942,9 +942,9 @@ f_make_tables(
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Local government district (LGD) breakdown of number of weekly deaths registered
-</h4>
+</h2>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
@@ -966,7 +966,7 @@ Local government district (LGD) breakdown of number of weekly deaths registered
 
 ::: {#lgd-tabs .panel-tabset}
 
-##### Weekly
+### Weekly
 
 ```{r lgd deaths registered map, fig.alt="Map showing the number of deaths across Local Government Districts. Death counts vary by area, with some districts,like Belfast, showing higher numbers than others."}
 #| out-width: 100%
@@ -1076,7 +1076,7 @@ f_make_tables(
 )
 ```
 
-##### Year to date
+### Year to date
 
 ```{r lgd_deaths_ytd_registered_map, fig.alt="Map showing the number of deaths across Local Government Districts for the YTD. Death counts vary by area, with some districts,like Belfast, showing higher numbers than others."}
 #| out-width: 100%
@@ -1235,9 +1235,9 @@ f_make_tables(
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Place of death breakdown of number of weekly deaths registered
-</h4>
+</h2>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
@@ -1258,7 +1258,7 @@ Place of death breakdown of number of weekly deaths registered
 
 ::: {#pod-tabs .panel-tabset .plotly-tabset}
 
-##### Weekly
+### Weekly
 
 ```{r fig_place, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by place of occurrence for the latest week. Most deaths occur in hospitals and at home, with fewer deaths in care or nursing homes, and the lowest numbers in hospice and other locations."}
 # max x-axis range
@@ -1350,7 +1350,7 @@ f_make_tables(
 )
 ```
 
-##### Year to date
+### Year to date
 ```{r fig_place_ytd, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by place of occurrence for the year to date. Most deaths occur in hospitals and at home, with fewer deaths in care or nursing homes, and the lowest numbers in hospice and other locations."}
 # max x-axis range
 max_x <- max(df_ytd_pod$total_value, na.rm = TRUE)
@@ -1475,9 +1475,9 @@ f_make_tables(
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Registered weekly deaths and death occurrences for the past 52 weeks
-</h4>
+</h2>
 
 <!-- Accordion expand/collapse icon -->
 <span class="accordion-symbol" aria-hidden="true"></span>
@@ -1736,9 +1736,9 @@ f_make_tables(
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h4 class="accordion-title">
+<h2 class="accordion-title">
 Links to other publications on death registrations
-</h4>
+</h2>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
@@ -1769,8 +1769,8 @@ Links to other publications on death registrations
 
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h4 class="accordion-title">
-FAQs</h4>
+<h2 class="accordion-title">
+FAQs</h2>
 
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>

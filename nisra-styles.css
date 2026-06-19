@@ -42,29 +42,33 @@ h1 {
 }
 
 h2 {
-  font-size: 24px;
+  font-size: 21px;
   line-height: 1.333;
   font-weight: 400;
 }
 
 @media (min-width: 992px) {
   h2 {
-    font-size: 25px;
+    font-size: 23px;
     line-height: 1.32;
   }
 }
 
 h3 {
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1.143;
   font-weight: 400;
 }
 
 @media (min-width: 992px) {
   h3 {
-    font-size: 24px;
+    font-size: 21px;
     line-height: 1.25;
   }
+}
+
+h3 {
+  color: #00205b;
 }
 
 h4 {
@@ -311,7 +315,7 @@ main a[target="_blank"]:not(.publication-action-button)::after {
 .card-header h2,
 .card-header h3,
 .card-header h4 {
-  color: #fff;
+  color: #00205b;
 }
 
 .card-footer {
@@ -883,4 +887,9 @@ a.cookiesbarlink {
 #pod-tabs .js-plotly-plot {
   width: 100% !important;
   max-width: 100% !important;
+}
+
+.panel-tabset .nav-tabs .nav-link,
+.panel-tabset [role="tab"] {
+  font-size: 0.9rem !important;
 }
