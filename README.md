@@ -6,6 +6,7 @@ The project is designed to support reproducible analytical publication by keepin
 
 ## Contents
 
+* [Process chart](#process-chart)
 * [What the dashboard shows](#what-the-dashboard-shows)
 * [Repository structure](#repository-structure)
 * [Prerequisites](#prerequisites)
@@ -17,6 +18,10 @@ The project is designed to support reproducible analytical publication by keepin
 * [Outputs and downloadable data](#outputs-and-downloadable-data)
 * [Troubleshooting](#troubleshooting)
 * [Contributing](#contributing)
+
+## Process chart
+
+<img width="1672" height="941" alt="process_chart" src="https://github.com/user-attachments/assets/c84dff58-ff8b-4119-89b9-f010136abbf9" />
 
 ## What the dashboard shows
 
