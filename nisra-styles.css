@@ -893,3 +893,10 @@ a.cookiesbarlink {
 .panel-tabset [role="tab"] {
   font-size: 0.9rem !important;
 }
+
+.info-box-title {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}

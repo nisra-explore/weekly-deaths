@@ -51,7 +51,7 @@ window.populateInfoBoxes = function(containerId, labels, content) {
               data-active-index=""
             >
               <div class="accordion-body">
-                <h2 id="${containerId}-title" style="color:#00205B;"></h2>
+                <div id="${containerId}-title" class="info-box-title" style="color:#00205B;"></div>
                 <div id="${containerId}-body"></div>
               </div>
             </div>
