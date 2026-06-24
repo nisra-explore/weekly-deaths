@@ -900,3 +900,8 @@ a.cookiesbarlink {
   font-weight: 600;
   margin-bottom: 0.75rem;
 }
+
+.about-page-actions {
+  justify-content: flex-end !important;
+  margin: 1rem 1rem 1.5rem 0rem !important;
+}
