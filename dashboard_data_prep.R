@@ -290,23 +290,22 @@ over_75_pct = round((over_75/week_total)*100, 1) # round to 1 decimal point
 
 # Calculate year-to-date age breakdown
 cur_year <- lubridate::year(Sys.Date())
-df_age_ytd <- df_wdthssxag %>%
-  filter(grepl(cur_year, df_wdthssxag$`Week ending date`))
 
-# Aggregate by age band
-df_age_ytd <- df_age_ytd %>%
-  select(-c(1:7, 9)) %>%
+df_age_ytd <- df_wdthssxag %>%
+  filter(
+    grepl(cur_year, `Week ending date`),
+    SEX == 'ALL'   # change this to the correct value in your data
+  ) %>%
+  mutate(`Age band` = str_remove(`Age band`, "^Age\\s+")) %>%
+  filter(`Age band` != "All ages") %>%
   group_by(`Age band`) %>%
-  summarise(total_value = sum(`VALUE`, na.rm = TRUE))
-# Remove total row
-df_age_ytd <- df_age_ytd [-c(7),]
+  summarise(`Number of deaths` = sum(as.numeric(VALUE), na.rm = TRUE), .groups = "drop")
 
 # Clean age band labels
 df_age_ytd <- df_age_ytd %>%
   mutate(`Age band` = str_remove(`Age band`, "^Age\\s+"))
 
-df_age_ytd_dl <- df_age_ytd %>%
-  rename('Number of deaths' = 'total_value')
+df_age_ytd_dl <- df_age_ytd
 
 ##### LGD#####
 # Prepare weekly deaths by Local Government District (LGD)

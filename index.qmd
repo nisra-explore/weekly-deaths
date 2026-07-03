@@ -850,13 +850,13 @@ f_make_tables(
 ### Year to date
 ```{r fig_age_ytd, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group from the start of the year. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
-max_x <- max(df_age_ytd$`total_value`, na.rm = TRUE)
+max_x <- max(df_age_ytd$`Number of deaths`, na.rm = TRUE)
 
 # Create horizontal bar chart
 plot_ly(
   df_age_ytd,
   y = ~`Age band`,
-  x = ~`total_value`,
+  x = ~`Number of deaths`,
   type = "bar",
   orientation = "h",
   marker = list(
