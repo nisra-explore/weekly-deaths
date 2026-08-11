@@ -1756,6 +1756,8 @@ Links to other publications on death registrations
 
 - [Deaths registered weekly in Scotland](https://www.nrscotland.gov.uk/publications/deaths-registered-weekly-in-scotland/#)
 
+- [Analysis Function comparability explainer](https://analysisfunction.civilservice.gov.uk/government-statistical-service-and-statistician-group/user-facing-pages/theme-based-support-for-users/health-and-care-statistics/coherence-of-weekly-deaths-statistics-in-the-uk/)
+
 </div>
 </details>
 
