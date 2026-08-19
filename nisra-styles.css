@@ -7,6 +7,28 @@
   box-sizing: border-box;
 }
 
+  /* focus ring for keyboard users */
+*:focus-visible {
+  outline: 3px solid #d4351c !important;
+  outline-offset: 2.5px;
+  box-shadow: none !important;
+}
+
+:root {
+  --bs-focus-ring-color: #d4351c;
+  --bs-focus-ring-width: 0.25rem;
+}
+
+/* Accordion focus - keep ring visible inside clipped card */
+.card.accordion > summary.card-header:focus-visible {
+  outline: 3px solid #d4351c !important;
+  outline-offset: -3px;
+}
+
+/* Hyperlinks */
+a {color: #0F6FB8; text-decoration: underline; text-decoration-thickness: 1px; }
+a:hover, a:focus { text-decoration-thickness: 3px;}
+
 html,
 body {
   margin: 0;
@@ -179,6 +201,25 @@ nav a {
 .full-bleed-header .text-white.text-center {
   max-width: 1080px;
   margin: 0 auto;
+}
+
+.green-header-bar {
+  position: relative;
+  height: 10px;
+  background-color: #68a41e;
+  z-index: 1;
+}
+
+.green-header-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 100%;
+  transform: translateX(-50%);
+  background-color: #68a41e;
+  z-index: -1;
 }
 
 .app-title {
@@ -683,12 +724,12 @@ a.cookiesbarlink {
   padding: 0 !important;
   margin: 0 !important;
 
-  background-color: #68a41e !important;
-  color: #000 !important;
+  background-color: #732777 !important;
+  color: #fff !important;
   border: 0 !important;
   border-radius: 4px !important;
 
-  font-size: 16px !important;
+  font-size: 18px !important;
   line-height: 1 !important;
   font-family: 'Roboto', Arial, sans-serif !important;
 
@@ -706,14 +747,9 @@ a.cookiesbarlink {
 
 .publication-actions .publication-action-button:hover,
 .publication-actions .publication-action-button:focus {
-  background-color: #00205b !important;
+  background-color: #6C757D !important;
   color: #ffffff !important;
   text-decoration: underline !important;
-}
-
-.publication-actions .publication-action-button:focus {
-  outline: 3px solid #68a41e !important;
-  outline-offset: 2px !important;
 }
 
 .page-date-heading .publication-actions {
