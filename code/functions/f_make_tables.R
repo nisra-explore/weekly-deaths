@@ -178,36 +178,54 @@ f_make_tables <- function(data,
                       )
   )
   
-  buttons <- div(
-    div(
-      class = "row", style = "display: flex;",
-      div(class = "row-indent"),
-      div(class = "download", "Download data: ")
-    ),
-    div(
-      class = "row", style = c("display: flex;", "flex-wrap: wrap"),
-      div(class = "row-indent"),
-      div(class = "csv-button2", em_csv),
-      div(
-        class = "download",
-        style = "padding-top: 7px; margin-top: 40px; padding-left: 5px;
-          padding-right: 5px;"
+  # Create one download button with a dropdown menu
+  buttons <- tags$div(
+    class = "table-download-container",
+    
+    tags$details(
+      class = "download-dropdown",
+      
+      tags$summary(
+        class = "download-dropdown-button",
+        "Download data"
       ),
-      div(class = "xl-button2", em_xl),
-      div(class = "download", style = "padding-top: 7px; padding-left: 5px;
-          padding-right: 5px;")
+      
+      tags$div(
+        class = "download-dropdown-menu",
+        
+        tags$div(
+          class = "download-dropdown-item",
+          em_csv
+        ),
+        
+        tags$div(
+          class = "download-dropdown-item",
+          em_xl
+        )
+      )
     )
   )
   
-  # Test html output to ensure correct format (no unformatted html
-  # strings appearing in output)
-  if (grepl("&lt;", buttons)) {
-    buttons <- gsub("&lt;", "<", buttons) %>%
-      # Remove escape characters and insert proper < > characters
-      gsub("&gt;", ">", .)
+  # Ensure embedded HTML is rendered rather than printed as escaped text
+  buttons_html <- as.character(buttons)
+  
+  if (grepl("&lt;", buttons_html, fixed = TRUE)) {
+    buttons_html <- gsub(
+      "&lt;",
+      "<",
+      buttons_html,
+      fixed = TRUE
+    )
     
-    HTML(buttons) # Re-format as HTML string
-  } else { # Else render as normal
+    buttons_html <- gsub(
+      "&gt;",
+      ">",
+      buttons_html,
+      fixed = TRUE
+    )
+    
+    HTML(buttons_html)
+  } else {
     buttons
   }
 }
