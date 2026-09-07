@@ -430,7 +430,7 @@ htmlwidgets::onRender(
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_observe_excess_dl,
-  title = "RegisteredExpected",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -603,10 +603,11 @@ Previous week: `r scales::comma(covid_wdths_prev)`
       [
         `
           <p>
-            COVID-19 deaths include any mention of coronavirus, confirmed or
-            suspected, anywhere on the death certificate. Flu or Pneumonia
-            related deaths include any mention of these conditions on the
-            death certificate.
+            COVID-19 deaths include any mention of coronavirus, confirmed or suspected, 
+            anywhere on the death certificate. Flu or pneumonia related deaths include 
+            any mention of these conditions on the death certificate and are aligned with 
+            ICD-10 codes J09 to J18. Aspiration pneumonia (ICD-10 J69) is excluded. 
+            Klebsiella pneumoniae is included only where respiratory-related.
           </p>
         `
       ]
@@ -841,7 +842,7 @@ plot_ly(
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_death_age_dl,
-  title = "AgeWeekly",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -916,7 +917,7 @@ plot_ly(
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_age_ytd_dl,
-  title = "AgeYTD",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -1070,7 +1071,7 @@ ggplot() +
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_map_weekly_dl,
-  title = "LGDWeekly",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -1180,7 +1181,7 @@ ggplot() +
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_map_ytd_dl,
-  title = "LGDYTD",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -1344,7 +1345,7 @@ fig_place
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_pod,
-  title = "PlaceWeekly",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -1420,7 +1421,7 @@ fig_place_ytd
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_ytd_pod_dl,
-  title = "PlaceYTD",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -1684,7 +1685,7 @@ htmlwidgets::onRender(
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_reg_vs_occ_dl,
-  title = "RegvsOcc",
+  title = "Data",
   data_style = ns_comma,
   data_dir = here("outputs/figdata"),
 )
@@ -1768,54 +1769,58 @@ Links to other publications on death registrations
 --------------------------------------- -->
 
 <details class="card accordion">
-
 <summary class="card-header accordion-header">
 <div class="accordion-title-row">
-<h2 class="accordion-title">
-FAQs</h2>
-
+<h2 class="accordion-title">FAQs</h2>
 <span class="accordion-symbol" aria-hidden="true"></span>
 </div>
 </summary>
 
 <div class="card-body">
+<p>
+<strong>What is the difference between registered, occurred and expected deaths?</strong><br>
+<strong>Registered deaths</strong> are counted based on the date the death is officially recorded with the General Register Office.<br>
+<strong>Occurred deaths</strong> (death occurrences) are based on the actual date the person died, regardless of when the death was registered.<br>
+<strong>Expected deaths</strong> are an estimate of how many deaths would normally occur, based on historical trends. These are used to compare with current figures.
+</p>
 
-**1. What is the difference between registered, occurred and expected deaths?**  
-**Registered deaths** are counted based on the date the death is officially recorded with the General Register Office.  
-**Occurred deaths** (death occurrences) are based on the actual date the person died, regardless of when the death was registered.  
-**Expected deaths** are an estimate of how many deaths would normally occur, based on historical trends. These are used to compare with current figures.
-
-
-**2. Why might deaths appear in a different week than when they occurred?**  
+<p>
+<strong>Why might deaths appear in a different week than when they occurred?</strong><br>
 Deaths are shown based on the registration date, not the date of death. This means some deaths may appear in a later week than when they actually happened. Most deaths in Northern Ireland are registered within 5 days. Delays can occur, especially around public holidays.
+</p>
 
-**3. What figures are included in year to date?**  
-Year to date (YTD) figures refer to deaths registered in the current annual reporting period. Please note, the first day of week 1 may fall in the previous calendar year, and the last day of week 52 may fall in the following calendar year. 
+<p>
+<strong>What figures are included in year to date?</strong><br>
+Year to date (YTD) figures refer to deaths registered in the current annual reporting period. Please note, the first day of week 1 may fall in the previous calendar year, and the last day of week 52 may fall in the following calendar year.
+</p>
 
-**4. How are expected deaths calculated?**  
-Expected deaths are calculated using statistical methods based on historical data trends. More information on the current method of estimating expected deaths and calculating excess deaths is available in the ONS Methodology Paper at: [Estimating excess deaths in the UK, methodology changes - Office for National Statistics (ons.gov.uk)](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges)
+<p>
+<strong>How are expected deaths calculated?</strong><br>
+Expected deaths are calculated using statistical methods based on historical data trends. More information on the current method of estimating expected deaths and calculating excess deaths is available in the ONS Methodology Paper:
+<a href="https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/estimatingexcessdeathsintheukmethodologychanges">Estimating excess deaths in the UK, methodology changes – Office for National Statistics</a>.
+</p>
 
-
-**5. Are weekly figures final?**  
+<p>
+<strong>Are weekly figures final?</strong><br>
 No — weekly figures are provisional. They may change as more data becomes available. Data are reviewed and updated quarterly as part of quality assurance.
+</p>
 
+<p>
+<strong>What counts as a COVID-19 or flu-related death?</strong><br>
+COVID-19 deaths include any mention of coronavirus, confirmed or suspected, anywhere on the death certificate. Flu or pneumonia related deaths include any mention of these conditions on the death certificate and are aligned with ICD-10 codes J09 to J18. Aspiration pneumonia (ICD-10 J69) is excluded. Klebsiella pneumoniae is included only where respiratory-related.
+</p>
 
-**6. What counts as a COVID‑19 or flu-related death?**  
-COVID‑19 deaths include any mention of coronavirus (confirmed or suspected) anywhere on the death certificate.
-Flu or pneumonia deaths include any mention of these conditions on the death certificate.
+<p>
+<strong>How are deaths assigned to local government districts?</strong><br>
+Deaths are assigned based on the person’s usual residence, which can include care or nursing homes. If the person did not usually live in Northern Ireland, the death is assigned to the place of death.
+</p>
 
-
-**7. How are deaths assigned to local government districts?**  
-Deaths are assigned based on the person’s usual residence (which can include care or nursing homes). If the person did not usually live in Northern Ireland, the death is assigned to the place of death.
-
-
-**8. What do the place of death categories mean?**  
-Care or nursing homes - only includes deaths that occurred in those settings. 'Other' includes deaths at non-usual residences or any other locations not listed.
-
+<p>
+<strong>What do the place of death categories mean?</strong><br>
+Care or nursing homes only includes deaths that occurred in those settings. “Other” includes deaths at non-usual residences or any other locations not listed.
+</p>
 </div>
 </details>
-
-
 <!-- --------------------------------------
      SCRIPT: Share functionality
      Enables users to share or copy link to dashboard

@@ -7,6 +7,37 @@
   box-sizing: border-box;
 }
 
+  /* focus ring for keyboard users */
+*:focus-visible {
+  outline: 3px solid #d4351c !important;
+  outline-offset: 2.5px;
+  box-shadow: none !important;
+}
+
+:root {
+  --bs-focus-ring-color: #d4351c;
+  --bs-focus-ring-width: 0.25rem;
+}
+
+/* Accordion focus - keep ring visible inside clipped card */
+.card.accordion > summary.card-header:focus-visible {
+  outline: 3px solid #d4351c !important;
+  outline-offset: -3px;
+}
+
+/* Hyperlinks */
+a {
+  color: #0f6fb8;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration-line: underline !important;
+  text-decoration-thickness: 3px !important;
+}
+
 html,
 body {
   margin: 0;
@@ -179,6 +210,25 @@ nav a {
 .full-bleed-header .text-white.text-center {
   max-width: 1080px;
   margin: 0 auto;
+}
+
+.green-header-bar {
+  position: relative;
+  height: 10px;
+  background-color: #68a41e;
+  z-index: 1;
+}
+
+.green-header-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 100%;
+  transform: translateX(-50%);
+  background-color: #68a41e;
+  z-index: -1;
 }
 
 .app-title {
@@ -372,9 +422,10 @@ main a[target="_blank"]:not(.publication-action-button)::after {
 }
 
 .footer a:hover,
-.footer a:focus {
+.footer a:focus-visible {
   color: #fff;
-  text-decoration-thickness: 2px;
+  text-decoration-line: underline !important;
+  text-decoration-thickness: 3px !important;
 }
 
 .footer-links {
@@ -567,22 +618,44 @@ a.cookiesbarlink {
 
 /* Main accordion card */
 .card.accordion {
-  background-color: #f2f2f2 !important;
-  color: #000 !important;
-  border: none !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #b1b4b6 !important;
   border-radius: 8px;
   margin-bottom: 1rem;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  box-shadow: none;
   overflow: hidden;
 }
 
-/* Header */
+/* Accordion header */
 .card.accordion > summary.card-header {
-  background-color: #e6e6e6 !important;
-  color: #000 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
   padding: 1rem;
   cursor: pointer;
-  border-bottom: 1px solid #ddd;
+  border-bottom: none;
+}
+
+.card.accordion .accordion-title {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+/* Header when hovered */
+.card.accordion > summary.card-header:hover {
+  background-color: #f2f2f2 !important;
+}
+
+/* Add separator between header and content when open */
+.card.accordion[open] > summary.card-header {
+  border-bottom: 1px solid #b1b4b6;
+}
+
+/* Accordion content */
+.card.accordion > *:not(summary) {
+  padding: 1rem;
+  background-color: #ffffff !important;
+  color: #000000;
 }
 
 /* Remove default marker */
@@ -625,28 +698,32 @@ a.cookiesbarlink {
   margin: 0;
   display: flex;
   align-items: center;
-  color: #000 !important;
+  color: #00205b !important;
 }
 
-/* Arrow */
+/* Accordion chevron */
 .accordion-symbol {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
   margin-left: auto;
-  color: #000;
-  font-size: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
+  flex-shrink: 0;
+
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300205b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1.25rem;
+
+  transition: transform 0.2s ease-in-out;
 }
 
-/* Arrow icon */
-.accordion-symbol::before {
-  content: "›";
-}
-
-/* Rotate when open */
+/* Point the chevron upwards when open */
 .card.accordion[open] .accordion-symbol {
-  transform: rotate(90deg);
+  transform: rotate(180deg);
+}
+/* Rotate the Bootstrap chevron when open */
+.card.accordion[open] .accordion-symbol {
+  transform: rotate(-180deg);
 }
 
 /* Content area inside card */
@@ -683,12 +760,12 @@ a.cookiesbarlink {
   padding: 0 !important;
   margin: 0 !important;
 
-  background-color: #68a41e !important;
-  color: #000 !important;
+  background-color: #732777 !important;
+  color: #fff !important;
   border: 0 !important;
   border-radius: 4px !important;
 
-  font-size: 16px !important;
+  font-size: 18px !important;
   line-height: 1 !important;
   font-family: 'Roboto', Arial, sans-serif !important;
 
@@ -706,14 +783,9 @@ a.cookiesbarlink {
 
 .publication-actions .publication-action-button:hover,
 .publication-actions .publication-action-button:focus {
-  background-color: #00205b !important;
+  background-color: #6C757D !important;
   color: #ffffff !important;
   text-decoration: underline !important;
-}
-
-.publication-actions .publication-action-button:focus {
-  outline: 3px solid #68a41e !important;
-  outline-offset: 2px !important;
 }
 
 .page-date-heading .publication-actions {
@@ -799,28 +871,38 @@ a.cookiesbarlink {
   margin-bottom: 10px;
 }
 
-/* All tabs */
+/* Closed/inactive tabs */
 .panel-tabset [role="tab"] {
-  background-color: #f2f5f8;
-  color: #333;
   padding: 8px 16px;
   margin-right: 4px;
-  border-radius: 6px 6px 0 0;
-  font-weight: 500;
+
+  color: #0f6fb8;
+  background-color: #f2f5f8;
+
   border: 1px solid #dee2e6;
   border-bottom: none;
+  border-radius: 6px 6px 0 0;
+
+  font-size: 0.9rem !important;
+  font-weight: 500;
 }
 
-/* Active tab */
+/* Selected tab */
 .panel-tabset [role="tab"][aria-selected="true"] {
-  background-color: #00205b;
-  color: #ffffff;
+  color: #00205b;
+  background-color: #ffffff;
+  border-color: #dee2e6;
   font-weight: 600;
+
+  /* Connect the white tab to the white content area */
+  margin-bottom: -2px;
+  border-bottom: 2px solid #ffffff;
 }
 
-/* Hover effect */
-.panel-tabset [role="tab"]:hover {
-  background-color: #dbe4f0;
+/* Hover on closed tabs */
+.panel-tabset [role="tab"][aria-selected="false"]:hover {
+  color: #0f6fb8;
+  background-color: #e6e9ed;
   cursor: pointer;
 }
 
@@ -834,10 +916,14 @@ a.cookiesbarlink {
 }
 
 .info-tab-btn {
+  /* Override Bootstrap's pale-blue focus styles */
+  --bs-accordion-btn-focus-border-color: #00205b;
+  --bs-accordion-btn-focus-box-shadow: none;
+
   width: 100%;
   justify-content: center;
-  border: 2px solid #00205B;
-  color: #00205B;
+  border: 2px solid #00205b;
+  color: #00205b;
   background-color: #ffffff;
 }
 
@@ -845,18 +931,27 @@ a.cookiesbarlink {
   margin-left: -2px;
 }
 
-.info-tab-btn:not(.collapsed),
-.info-tab-btn:hover,
-.info-tab-btn:focus {
+/* Selected, hovered or focused button */
+.accordion-button.info-tab-btn:not(.collapsed),
+.accordion-button.info-tab-btn:hover,
+.accordion-button.info-tab-btn:focus,
+.accordion-button.info-tab-btn:active {
   color: #ffffff;
-  background-color: #00205B;
-  border-color: #00205B;
-  box-shadow: none;
+  background-color: #00205b;
+  border-color: #00205b !important;
+  box-shadow: none !important;
 }
 
-.info-tab-btn:not(.collapsed)::after,
-.info-tab-btn:hover::after,
-.info-tab-btn:focus::after {
+/* Prevent a mouse-click outline while retaining :focus-visible */
+.accordion-button.info-tab-btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Keep the accordion arrow white */
+.accordion-button.info-tab-btn:not(.collapsed)::after,
+.accordion-button.info-tab-btn:hover::after,
+.accordion-button.info-tab-btn:focus::after,
+.accordion-button.info-tab-btn:active::after {
   filter: brightness(0) invert(1);
 }
 
@@ -904,4 +999,91 @@ a.cookiesbarlink {
 .about-page-actions {
   justify-content: flex-end !important;
   margin: 1rem 1rem 1.5rem 0rem !important;
+}
+
+.table-download-container {
+  display: inline-block;
+  position: relative;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.download-dropdown {
+  display: inline-block;
+  position: relative;
+}
+
+.download-dropdown > summary {
+  list-style: none;
+}
+
+.download-dropdown > summary::-webkit-details-marker {
+  display: none;
+}
+
+.download-dropdown-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  background-color: #732777;
+  color: #ffffff;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  user-select: none;
+}
+
+.download-dropdown-button:hover,
+.download-dropdown-button:focus {
+  background-color: #6c757d;
+  color: #ffffff;
+}
+
+.download-dropdown-button::after {
+  content: "";
+  width: 0;
+  height: 0;
+  margin-left: 4px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid currentColor;
+  transition: transform 0.15s ease-in-out;
+}
+
+.download-dropdown[open] .download-dropdown-button::after {
+  transform: rotate(180deg);
+}
+
+.download-dropdown-menu {
+  position: absolute;
+  z-index: 1000;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 230px;
+  padding: 4px 0;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 15%);
+}
+
+.download-dropdown-item a {
+  display: block;
+  padding: 10px 14px;
+  color: #000000;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.download-dropdown-item a:hover,
+.download-dropdown-item a:focus {
+  background-color: #eeeeee;
+  text-decoration: underline;
 }
