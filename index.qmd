@@ -188,6 +188,7 @@ Provisional number of weekly registered deaths and expected weekly deaths for th
 
 ::: {.card-body}
 
+::: {#fig1}
 ```{r fig_overall_expected_repeat, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing registered deaths by week alongside a line for expected deaths. Registered deaths fluctuate over time and generally track close to expected deaths, with some variation above and below the expected values."}
 
 # Prepare data
@@ -276,7 +277,7 @@ df_expected_outline <- df_observe_excess %>%
 
 # Build Plotly chart
 
-p <- plot_ly() %>%
+fig1 <- plot_ly() %>%
   
   # Bars: Registered deaths
   add_bars(
@@ -318,8 +319,8 @@ p <- plot_ly() %>%
     margin = list(t = 70, b = 90),
     
     # Transparent backgrounds to match dashboard theme
-    plot_bgcolor = "rgba(0,0,0,0)",
-    paper_bgcolor = "rgba(0,0,0,0)",
+    plot_bgcolor = "#ffffff",
+    paper_bgcolor = "#ffffff",
     
     # Custom x-axis month labels
     xaxis = list(
@@ -377,7 +378,7 @@ p <- plot_ly() %>%
 # Switch to fewer x-axis labels on mobile or narrow/zoomed screens
 
 htmlwidgets::onRender(
-  p,
+  fig1,
   sprintf(
     "
     function(el, x) {
@@ -425,14 +426,30 @@ htmlwidgets::onRender(
 )
 
 ```
-
+:::
 ```{r download_reg_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_observe_excess_dl,
   title = "Data",
+
+  plotly_id = "fig1",
+
+  plotly_title = paste(
+    "Provisional number of weekly registered deaths",
+    "and expected weekly deaths for the past 52 weeks"
+  ),
+
+  plotly_label = "Chart",
+
+  plotly_filename = "fig1",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
 
@@ -773,12 +790,13 @@ Age breakdown of number of weekly deaths registered
 ::: {#age-tabs .panel-tabset .plotly-tabset}
 
 ### Weekly
+::: {#fig2}
 ```{r fig_age, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group for the latest week. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_death_age$`Weekly Total`, na.rm = TRUE)
 
 # Create horizontal bar chart
-plot_ly(
+fig2 <- plot_ly(
   df_death_age,
   y = ~`Age band`,
   x = ~`Weekly Total`,
@@ -836,25 +854,44 @@ plot_ly(
   # Remove Plotly toolbar for cleaner dashboard display
   config(displayModeBar = FALSE, responsive = TRUE)
 
-```
+fig2
 
+```
+:::
 ```{r download_age_weekly_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_death_age_dl,
   title = "Data",
+
+  plotly_id = "fig2",
+
+  plotly_title = paste(
+    "Age breakdown of number of weekly deaths registered (weekly)"
+  ),
+
+  plotly_label = "Chart",
+
+  plotly_filename = "fig2",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
 
+
 ### Year to date
+::: {#fig3}
 ```{r fig_age_ytd, echo=FALSE, out.width="100%", fig.height=5, fig.alt="Bar chart showing deaths by age group from the start of the year. The number of deaths increases with age, with the highest counts in the older age groups."}
 # max x-axis range
 max_x <- max(df_age_ytd$`Number of deaths`, na.rm = TRUE)
 
 # Create horizontal bar chart
-plot_ly(
+fig3 <- plot_ly(
   df_age_ytd,
   y = ~`Age band`,
   x = ~`Number of deaths`,
@@ -910,18 +947,35 @@ plot_ly(
   
   # Remove Plotly toolbar for cleaner presentation
   config(displayModeBar = FALSE, responsive = TRUE)
+fig3
 
 ```
-
+:::
 ```{r download_age_ytd_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_age_ytd_dl,
   title = "Data",
+
+  plotly_id = "fig3",
+
+  plotly_title = paste(
+    "Age breakdown of number of weekly deaths registered (year to date)"
+  ),
+
+  plotly_label = "Chart",
+
+  plotly_filename = "fig3",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
+
 :::
 
 :::
@@ -968,10 +1022,10 @@ Local government district (LGD) breakdown of number of weekly deaths registered
 ::: {#lgd-tabs .panel-tabset}
 
 ### Weekly
-
+::: {#fig4}
 ```{r lgd deaths registered map, fig.alt="Map showing the number of deaths across Local Government Districts. Death counts vary by area, with some districts,like Belfast, showing higher numbers than others."}
 #| out-width: 100%
-#| fig-format: svg
+#| fig-format: png
 #| fig-height: 4
 #| dev.args: !expr list(bg = "#fff")
 
@@ -1066,19 +1120,26 @@ ggplot() +
     plot.background = element_rect(fill = "#fff", colour = NA),
   )
 ```
-
+:::
 ```{r download_lgd_weekly_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_map_weekly_dl,
-  title = "Data",
+  title = "Map 1",
+
+  image_id = "fig4",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
 
 ### Year to date
-
+::: {#fig5}
 ```{r lgd_deaths_ytd_registered_map, fig.alt="Map showing the number of deaths across Local Government Districts for the YTD. Death counts vary by area, with some districts,like Belfast, showing higher numbers than others."}
 #| out-width: 100%
 #| fig-format: svg
@@ -1176,14 +1237,21 @@ ggplot() +
     plot.background = element_rect(fill = "#fff", colour = NA),
   )
 ```
-
+:::
 ```{r download_lgd_ytd_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_map_ytd_dl,
-  title = "Data",
+  title = "Map 2",
+
+  image_id = "fig5",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
 
@@ -1260,7 +1328,7 @@ Place of death breakdown of number of weekly deaths registered
 ::: {#pod-tabs .panel-tabset .plotly-tabset}
 
 ### Weekly
-
+::: {#fig6}
 ```{r fig_place, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by place of occurrence for the latest week. Most deaths occur in hospitals and at home, with fewer deaths in care or nursing homes, and the lowest numbers in hospice and other locations."}
 # max x-axis range
 max_x <- max(df_pod$`Number of Deaths`, na.rm = TRUE)
@@ -1340,18 +1408,34 @@ fig_place <- plot_ly(
 # Print plot
 fig_place
 ```
-
+:::
 ```{r download_pod_weekly_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_pod,
   title = "Data",
+
+  plotly_id = "fig6",
+
+  plotly_title = paste(
+    "Place of death breakdown of number of weekly deaths registered (weekly)"
+  ),
+
+  plotly_label = "Chart",
+
+  plotly_filename = "fig6",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
 
 ### Year to date
+::: {#fig7}
 ```{r fig_place_ytd, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="Bar chart showing deaths by place of occurrence for the year to date. Most deaths occur in hospitals and at home, with fewer deaths in care or nursing homes, and the lowest numbers in hospice and other locations."}
 # max x-axis range
 max_x <- max(df_ytd_pod$total_value, na.rm = TRUE)
@@ -1416,16 +1500,32 @@ fig_place_ytd <- plot_ly(
 
 fig_place_ytd
 ```
-
+:::
 ```{r download_place_ytd_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_ytd_pod_dl,
   title = "Data",
+
+  plotly_id = "fig7",
+
+  plotly_title = paste(
+    "Place of death breakdown of number of weekly deaths registered (year to date)"
+  ),
+
+  plotly_label = "Chart",
+
+  plotly_filename = "fig7",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
+
 :::
 :::
 :::
@@ -1497,7 +1597,7 @@ Registered weekly deaths and death occurrences for the past 52 weeks
 </div>
 
 ::: {.card-body}
-
+::: {#fig8}
 ```{r fig_overall_observe, fig-format: svg, echo=FALSE, out.width="100%", fig.alt="A chart of registered deaths by week with a line showing deaths that occurred in each week. The two series follow a similar pattern over time, with weekly values generally close but with some variation between registered and occurred deaths."}
 
 # Create custom x-axis labels
@@ -1680,17 +1780,31 @@ htmlwidgets::onRender(
   )
 )
 ```
-
+:::
 ```{r download_reg_vs_occ_deaths, echo = FALSE}
 # call make tables function to create chart download buttons
 f_make_tables(
   data = df_reg_vs_occ_dl,
   title = "Data",
+
+  plotly_id = "fig8",
+
+  plotly_title = paste(
+    "Registered weekly deaths and death occurrences for the past 52 weeks"
+  ),
+
+  plotly_label = "Chart",
+
+  plotly_filename = "fig8",
+
   data_style = ns_comma,
-  data_dir = here("outputs/figdata"),
+
+  data_dir = here::here(
+    "outputs",
+    "figdata"
+  )
 )
 ```
-
 :::
 :::
 
