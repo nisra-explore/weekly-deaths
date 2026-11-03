@@ -1610,10 +1610,10 @@
     },
     "nloptr": {
       "Package": "nloptr",
-      "Version": "2.1.1",
+      "Version": "2.2.1",
       "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "27550641889a3abf3aec4d91186311ec"
+      "Repository": "TLCRAN14",
+      "Hash": "dd6975473dd4c9b96e9be93b796b9c1a"
     },
     "nnet": {
       "Package": "nnet",
