@@ -2260,15 +2260,16 @@
     },
     "terra": {
       "Package": "terra",
-      "Version": "1.7-78",
+      "Version": "1.9-50",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "Rcpp",
-        "methods"
+        "methods",
+        "stats"
       ],
-      "Hash": "8f020def0792119cb98bd8f696dab22d"
+      "Hash": "e64a4216e400db78db4f6ed2d72695f4"
     },
     "tibble": {
       "Package": "tibble",
